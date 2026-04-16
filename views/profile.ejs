@@ -1,0 +1,95 @@
+<%- include("partials/header", { title, currentUser, flashes, extraCss: null }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Profile & personalization</p>
+        <h1 class="dashboard-title"><%= currentUser.name %></h1>
+        <p class="dashboard-subtitle">Manage your account basics and keep your budget habits visible in one place.</p>
+      </div>
+      <a href="/expenses/add" class="btn-primary">Add expense</a>
+    </div>
+
+    <div class="stats-grid">
+      <article class="stat-panel">
+        <span class="stat-label">Account email</span>
+        <strong class="stat-value stat-value--small"><%= currentUser.email %></strong>
+        <span class="stat-meta">Used for sign in and account recovery</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Total transactions</span>
+        <strong class="stat-value"><%= summary.total_count %></strong>
+        <span class="stat-meta">Expenses recorded so far</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Monthly budget</span>
+        <strong class="stat-value stat-value--small"><%= monthlyBudget ? `₹${monthlyBudget.toFixed(2)}` : "Not set" %></strong>
+        <span class="stat-meta">Budget for the current month</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">This month spent</span>
+        <strong class="stat-value stat-value--small">₹<%= monthlySpend.toFixed(2) %></strong>
+        <span class="stat-meta">Compared against your budget</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Latest activity</span>
+        <strong class="stat-value stat-value--small"><%= summary.latest_date || "No activity yet" %></strong>
+        <span class="stat-meta">Last expense date</span>
+      </article>
+    </div>
+
+    <div class="dashboard-grid">
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Account snapshot</h2>
+          <span class="card-note">Personalized overview</span>
+        </div>
+        <div class="insight-list">
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Greeting</span>
+            <strong>Good to see you, <%= currentUser.name %></strong>
+            <p>Spendly now uses personalized greetings and a smarter dashboard flow to make the app feel more human.</p>
+          </div>
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Theme preference</span>
+            <strong>Light or dark mode</strong>
+            <p>Use the Theme button in the navbar to switch modes instantly. Your preference is remembered in the browser.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>What improved</h2>
+          <span class="card-note">Current release</span>
+        </div>
+        <div class="category-stack">
+          <div class="category-row">
+            <div class="category-row-top">
+              <span>Smarter dashboard</span>
+              <span>Live</span>
+            </div>
+            <div class="category-row-bottom">Insights, forecasts, and charts now help you understand spending faster.</div>
+          </div>
+          <div class="category-row">
+            <div class="category-row-top">
+              <span>Advanced filters</span>
+              <span>Live</span>
+            </div>
+            <div class="category-row-bottom">Search by notes, multiple categories, amount range, and date range from the dashboard.</div>
+          </div>
+          <div class="category-row">
+            <div class="category-row-top">
+              <span>Responsive navbar</span>
+              <span>Live</span>
+            </div>
+            <div class="category-row-bottom">Sticky navigation, mobile menu, theme toggle, and clearer profile access are now built in.</div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

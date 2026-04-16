@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — Spendly{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+    <div class="dashboard-shell">
+        <div class="dashboard-header">
+            <div>
+                <p class="dashboard-eyebrow">Profile</p>
+                <h1 class="dashboard-title">{{ g.user["name"] }}</h1>
+                <p class="dashboard-subtitle">{{ g.user["email"] }}</p>
+            </div>
+            <a href="{{ url_for('add_expense') }}" class="btn-primary">Add expense</a>
+        </div>
+
+        <div class="stats-grid">
+            <article class="stat-panel">
+                <span class="stat-label">Account email</span>
+                <strong class="stat-value stat-value--small">{{ g.user["email"] }}</strong>
+                <span class="stat-meta">Used for sign in</span>
+            </article>
+            <article class="stat-panel">
+                <span class="stat-label">Total transactions</span>
+                <strong class="stat-value">{{ summary["total_count"] }}</strong>
+                <span class="stat-meta">Expenses recorded so far</span>
+            </article>
+            <article class="stat-panel">
+                <span class="stat-label">Monthly budget</span>
+                <strong class="stat-value stat-value--small">
+                    {% if monthly_budget %}₹{{ "%.2f"|format(monthly_budget) }}{% else %}Not set{% endif %}
+                </strong>
+                <span class="stat-meta">Budget for the current month</span>
+            </article>
+            <article class="stat-panel">
+                <span class="stat-label">This month spent</span>
+                <strong class="stat-value stat-value--small">₹{{ "%.2f"|format(monthly_spend) }}</strong>
+                <span class="stat-meta">Compared against your budget</span>
+            </article>
+            <article class="stat-panel">
+                <span class="stat-label">Latest activity</span>
+                <strong class="stat-value stat-value--small">
+                    {{ summary["latest_date"] if summary["latest_date"] else "No activity yet" }}
+                </strong>
+                <span class="stat-meta">Last expense date</span>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}

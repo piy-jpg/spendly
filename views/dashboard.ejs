@@ -1,0 +1,501 @@
+<%
+  const exportParams = new URLSearchParams();
+  if (filters.q) exportParams.set("q", filters.q);
+  filters.categories.forEach((category) => exportParams.append("categories", category));
+  if (filters.startDate) exportParams.set("start_date", filters.startDate);
+  if (filters.endDate) exportParams.set("end_date", filters.endDate);
+  if (filters.minAmount !== "") exportParams.set("min_amount", filters.minAmount);
+  if (filters.maxAmount !== "") exportParams.set("max_amount", filters.maxAmount);
+%>
+<%- include("partials/header", { title, currentUser, flashes, extraCss: null }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero-copy">
+        <p class="dashboard-eyebrow"><%= greeting %>, <%= currentUser.name %></p>
+        <h1 class="dashboard-title">Your money dashboard now guides the next move.</h1>
+        <p class="dashboard-subtitle">See daily habits, pacing, budget risk, and the specific actions that keep your month under control.</p>
+        <div class="hero-chip-row">
+          <div class="hero-chip">
+            <span class="hero-chip-label">Health score</span>
+            <strong><%= healthScore %>/100</strong>
+          </div>
+          <div class="hero-chip">
+            <span class="hero-chip-label">Today</span>
+            <strong>₹<%= todayStats.todaySpend.toFixed(2) %></strong>
+          </div>
+          <div class="hero-chip">
+            <span class="hero-chip-label">Run rate</span>
+            <strong>₹<%= velocity.dailyRate.toFixed(0) %>/day</strong>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/expenses/export?<%= exportParams.toString() %>" class="btn-ghost">Export CSV</a>
+        <a href="/expenses/add" class="btn-primary">Add expense</a>
+      </div>
+    </div>
+
+    <% if (!entryProgress.complete) { %>
+      <section class="dashboard-card progress-card">
+        <div class="card-head">
+          <h2>Unlock smart insights</h2>
+          <span class="card-note"><%= Math.min(entryProgress.totalCount, entryProgress.target) %>/<%= entryProgress.target %> entries added</span>
+        </div>
+        <p class="dashboard-subtitle">Add your first <%= entryProgress.target %> expenses to unlock stronger trend analysis, smarter comparisons, and more reliable forecasts.</p>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: <%= entryProgress.percent %>%"></div>
+        </div>
+      </section>
+    <% } %>
+
+    <% if (budgetAlert) { %>
+      <section class="budget-alert budget-alert--<%= budgetAlert.tier %>">
+        <div>
+          <p class="budget-alert-label"><%= budgetAlert.label %></p>
+          <p class="budget-alert-copy"><%= budgetAlert.message %></p>
+        </div>
+        <span class="budget-alert-stat"><%= budgetUsedPct %>% used</span>
+      </section>
+    <% } %>
+
+    <form method="GET" action="/dashboard" class="filter-card">
+      <div class="card-head">
+        <h2>Advanced filters</h2>
+        <span class="card-note">Search title, notes, category, date, and amount range</span>
+      </div>
+      <div class="filter-grid filter-grid--advanced">
+        <div class="form-group">
+          <label for="q">Search</label>
+          <input id="q" name="q" class="form-input" placeholder="Title or notes" value="<%= filters.q %>">
+        </div>
+        <div class="form-group">
+          <label>Categories</label>
+          <div class="filter-chip-list">
+            <% categories.forEach((category) => { %>
+              <label class="filter-chip <%= filters.categories.includes(category) ? 'filter-chip--active' : '' %>">
+                <input type="checkbox" name="categories" value="<%= category %>" <%= filters.categories.includes(category) ? "checked" : "" %>>
+                <span><%= category %></span>
+              </label>
+            <% }) %>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="min_amount">Min amount</label>
+          <input type="number" step="0.01" min="0" id="min_amount" name="min_amount" class="form-input" placeholder="0.00" value="<%= filters.minAmount %>">
+        </div>
+        <div class="form-group">
+          <label for="max_amount">Max amount</label>
+          <input type="number" step="0.01" min="0" id="max_amount" name="max_amount" class="form-input" placeholder="5000.00" value="<%= filters.maxAmount %>">
+        </div>
+        <div class="form-group">
+          <label for="start_date">From</label>
+          <input type="date" id="start_date" name="start_date" class="form-input" value="<%= filters.startDate %>">
+        </div>
+        <div class="form-group">
+          <label for="end_date">To</label>
+          <input type="date" id="end_date" name="end_date" class="form-input" value="<%= filters.endDate %>">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <% if (hasActiveFilters) { %>
+          <a href="/dashboard" class="btn-ghost">Clear filters</a>
+        <% } %>
+        <button type="submit" class="btn-primary">Apply filters</button>
+      </div>
+    </form>
+
+    <section class="dashboard-card quick-add-card" id="expenses">
+      <div class="card-head">
+        <h2>Quick add</h2>
+        <span class="card-note">One-click shortcuts</span>
+      </div>
+      <div class="quick-add-row">
+        <% quickAddCategories.forEach((category) => { %>
+          <a href="/expenses/add?category=<%= encodeURIComponent(category) %>" class="quick-add-pill">+ <%= category %></a>
+        <% }) %>
+      </div>
+    </section>
+
+    <div class="stats-grid stats-grid--five">
+      <article class="stat-panel stat-panel--highlight">
+        <span class="stat-label">Today</span>
+        <strong class="stat-value">₹<%= todayStats.todaySpend.toFixed(2) %></strong>
+        <span class="stat-meta">
+          <% if (todayStats.deltaPct === null) { %>
+            Build 2 days of history to compare daily habits
+          <% } else { %>
+            <%= todayStats.delta >= 0 ? "Up" : "Down" %> <%= Math.abs(todayStats.deltaPct) %>% vs yesterday
+          <% } %>
+        </span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">7-day spend</span>
+        <strong class="stat-value stat-value--small">₹<%= weeklySummary.total.toFixed(2) %></strong>
+        <span class="stat-meta">Highest: <%= weeklySummary.highestDay.label %> · ₹<%= weeklySummary.highestDay.total.toFixed(0) %></span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">This month</span>
+        <strong class="stat-value stat-value--small">₹<%= monthlySpend.toFixed(2) %></strong>
+        <span class="stat-meta">Current calendar month spend</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Run rate</span>
+        <strong class="stat-value stat-value--small">₹<%= velocity.dailyRate.toFixed(2) %>/day</strong>
+        <span class="stat-meta">Projected month end: ₹<%= velocity.projectedTotal.toFixed(0) %></span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Average expense</span>
+        <strong class="stat-value stat-value--small">₹<%= averageAmount.toFixed(2) %></strong>
+        <span class="stat-meta"><%= timelineMessage %></span>
+      </article>
+    </div>
+
+    <div class="analytics-grid" id="reports">
+      <article class="dashboard-card chart-card">
+        <div class="card-head">
+          <h2>Category split</h2>
+          <span class="card-note">Pie chart</span>
+        </div>
+        <% if (pieChart.segments.length) { %>
+          <div class="pie-layout">
+            <div class="pie-chart" style="background: <%= pieChart.gradient %>;">
+              <div class="pie-chart-hole">
+                <span>Total</span>
+                <strong>₹<%= totalAmount.toFixed(0) %></strong>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <% pieChart.segments.forEach((segment) => { %>
+                <div class="legend-row">
+                  <span class="legend-dot" style="background: <%= segment.color %>;"></span>
+                  <span><%= segment.category %></span>
+                  <strong><%= segment.percentage %>%</strong>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="empty-state empty-state--compact">
+            <h3>Category split unlocks after a few entries</h3>
+            <p>Add expenses across categories to reveal how your money is distributed.</p>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="dashboard-card chart-card">
+        <div class="card-head">
+          <h2>Monthly trend</h2>
+          <span class="card-note">Line graph</span>
+        </div>
+        <% if (lineChart.points.length) { %>
+          <svg class="line-chart" viewBox="0 0 320 160" role="img" aria-label="Monthly spending trend">
+            <line x1="0" y1="140" x2="320" y2="140" class="chart-axis"></line>
+            <path d="<%= lineChart.path %>" class="line-chart-path"></path>
+            <% lineChart.points.forEach((point) => { %>
+              <circle cx="<%= point.x %>" cy="<%= point.y %>" r="4" class="line-chart-point"></circle>
+            <% }) %>
+          </svg>
+          <div class="line-chart-labels">
+            <% lineChart.points.forEach((point) => { %>
+              <div class="line-chart-label">
+                <span><%= point.label %></span>
+                <strong>₹<%= point.total.toFixed(0) %></strong>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state empty-state--compact">
+            <h3>No trend yet</h3>
+            <p>Monthly trend appears once there is spending history across more dates.</p>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="dashboard-card chart-card">
+        <div class="card-head">
+          <h2>Weekly comparison</h2>
+          <span class="card-note">Bar chart</span>
+        </div>
+        <% if (weeklyChartRows.length) { %>
+          <div class="bar-chart">
+            <% weeklyChartRows.forEach((row) => { %>
+              <div class="bar-chart-column">
+                <div class="bar-chart-track">
+                  <div class="bar-chart-fill" style="height: <%= Math.max(12, Math.round((row.total / weeklyChartMax) * 100)) %>%"></div>
+                </div>
+                <strong>₹<%= row.total.toFixed(0) %></strong>
+                <span><%= row.label %></span>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty-state empty-state--compact">
+            <h3>No weekly comparison yet</h3>
+            <p>Weekly bars appear once you have a few logged expenses.</p>
+          </div>
+        <% } %>
+      </article>
+    </div>
+
+    <div class="dashboard-grid dashboard-grid--advisory" id="insights">
+      <section class="dashboard-stack">
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>AI advisor</h2>
+            <span class="card-note">Actionable recommendations</span>
+          </div>
+          <div class="insight-list">
+            <% advisorMessages.forEach((message) => { %>
+              <div class="insight-item insight-item--smart">
+                <span class="insight-label">Recommendation</span>
+                <p><%= message %></p>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="dashboard-card" id="budget">
+          <div class="card-head">
+            <h2>Risk alerts</h2>
+            <span class="card-note">Watch this closely</span>
+          </div>
+          <% if (riskAlerts.length) { %>
+            <div class="alert-list">
+              <% riskAlerts.forEach((alert) => { %>
+                <div class="alert-item"><%= alert %></div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="empty-state empty-state--compact">
+              <h3>No active risk alerts</h3>
+              <p>Your current pace looks stable right now.</p>
+            </div>
+          <% } %>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Category trends</h2>
+            <span class="card-note">Behavior shifts</span>
+          </div>
+          <% if (categoryTrends.length) { %>
+            <div class="category-stack">
+              <% categoryTrends.slice(0, 3).forEach((trend) => { %>
+                <div class="category-row">
+                  <div class="category-row-top">
+                    <span><%= trend.category %></span>
+                    <span class="<%= trend.delta >= 0 ? 'metric-up' : 'metric-down' %>">
+                      <%= trend.delta >= 0 ? '+' : '-' %>₹<%= Math.abs(trend.delta).toFixed(0) %>
+                    </span>
+                  </div>
+                  <div class="category-row-bottom">
+                    <% if (trend.pct === null) { %>
+                      New spending pattern this week
+                    <% } else { %>
+                      <%= trend.direction === 'up' ? 'Increased' : 'Dropped' %> by <%= Math.abs(trend.pct) %>% vs last week
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="empty-state empty-state--compact">
+              <h3>Not enough category movement yet</h3>
+              <p>Spendly will call out rising and falling categories as weekly patterns build.</p>
+            </div>
+          <% } %>
+        </article>
+      </section>
+
+      <section class="dashboard-stack">
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Financial health breakdown</h2>
+            <span class="card-note">Why your score is <%= healthScore %></span>
+          </div>
+          <div class="score-breakdown">
+            <% healthBreakdown.items.forEach((item) => { %>
+              <div class="score-row">
+                <div class="score-row-top">
+                  <span><%= item.label %></span>
+                  <strong><%= item.value %>%</strong>
+                </div>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width: <%= item.value %>%"></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Weekly summary</h2>
+            <span class="card-note">Compact overview</span>
+          </div>
+          <div class="mini-metrics">
+            <div class="mini-metric">
+              <span>Total this week</span>
+              <strong>₹<%= weeklySummary.total.toFixed(2) %></strong>
+            </div>
+            <div class="mini-metric">
+              <span>Highest day</span>
+              <strong><%= weeklySummary.highestDay.label %> · ₹<%= weeklySummary.highestDay.total.toFixed(0) %></strong>
+            </div>
+            <div class="mini-metric">
+              <span>Lowest day</span>
+              <strong><%= weeklySummary.lowestDay.label %> · ₹<%= weeklySummary.lowestDay.total.toFixed(0) %></strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Savings goal</h2>
+            <span class="card-note">Potential monthly savings</span>
+          </div>
+          <div class="goal-card">
+            <div class="goal-amounts">
+              <div>
+                <span class="stat-label">Goal</span>
+                <strong>₹<%= savingsGoal.target.toFixed(0) %></strong>
+              </div>
+              <div>
+                <span class="stat-label">Saved</span>
+                <strong>₹<%= savingsGoal.saved.toFixed(0) %></strong>
+              </div>
+            </div>
+            <div class="progress-track progress-track--goal">
+              <div class="progress-fill progress-fill--goal" style="width: <%= savingsGoal.percent %>%"></div>
+            </div>
+            <p class="card-note"><%= savingsGoal.percent %>% of this month's potential savings target</p>
+          </div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Smart insights</h2>
+            <span class="card-note">Behavior snapshots</span>
+          </div>
+          <div class="insight-list">
+            <% insights.forEach((insight) => { %>
+              <div class="insight-item insight-item--smart">
+                <span class="insight-label"><%= insight.label %></span>
+                <strong><%= insight.value %></strong>
+                <p><%= insight.detail %></p>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Recent expenses</h2>
+        <% if (expenses.length) { %>
+          <span class="card-note"><%= expenses.length %> item<%= expenses.length === 1 ? "" : "s" %></span>
+        <% } %>
+      </div>
+
+      <% if (expenses.length) { %>
+        <div class="table-wrap">
+          <table class="expense-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% expenses.forEach((expense) => { %>
+                <tr>
+                  <td>
+                    <div class="expense-title"><%= expense.title %></div>
+                    <% if (expense.notes) { %><div class="expense-notes"><%= expense.notes %></div><% } %>
+                  </td>
+                  <td><%= expense.category %></td>
+                  <td>₹<%= Number(expense.amount).toFixed(2) %></td>
+                  <td><%= expense.expense_date %></td>
+                  <td class="expense-actions">
+                    <a href="/expenses/<%= expense.id %>/edit">Edit</a>
+                    <a href="/expenses/<%= expense.id %>/delete" class="link-danger">Delete</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state empty-state--guided">
+          <h3>Add your first <%= entryProgress.target %> expenses to unlock insights</h3>
+          <p>You currently have <%= entryProgress.totalCount %> logged. Add a few more entries and Spendly will start showing smarter forecasts, category movement, and daily behavior signals.</p>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: <%= entryProgress.percent %>%"></div>
+          </div>
+          <a href="/expenses/add" class="btn-primary">Add expense</a>
+        </div>
+      <% } %>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="dashboard-stack">
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Monthly budget</h2>
+            <span class="card-note">Alerts at 50%, 80%, and 100%</span>
+          </div>
+          <form method="POST" action="/budget" class="budget-form">
+            <div class="budget-input-row">
+              <input type="number" step="0.01" min="0" name="monthly_budget" class="form-input" value="<%= monthlyBudget || '' %>" placeholder="Set monthly budget">
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+          </form>
+          <% if (monthlyBudget) { %>
+            <div class="budget-meter">
+              <div class="budget-meter-track">
+                <div class="budget-meter-fill <%= budgetUsedPct > 100 ? 'budget-meter-fill--over' : '' %>" style="width: <%= Math.min(budgetUsedPct, 100) %>%"></div>
+              </div>
+              <div class="budget-meta">
+                <span>Used <%= budgetUsedPct %>%</span>
+                <span>
+                  <% if (remainingBudget >= 0) { %>
+                    ₹<%= remainingBudget.toFixed(2) %> left
+                  <% } else { %>
+                    ₹<%= Math.abs(remainingBudget).toFixed(2) %> over budget
+                  <% } %>
+                </span>
+              </div>
+              <div class="budget-thresholds">
+                <span class="<%= budgetUsedPct >= 50 ? 'budget-threshold--active' : '' %>">50%</span>
+                <span class="<%= budgetUsedPct >= 80 ? 'budget-threshold--active' : '' %>">80%</span>
+                <span class="<%= budgetUsedPct >= 100 ? 'budget-threshold--active' : '' %>">100%</span>
+              </div>
+            </div>
+          <% } else { %>
+            <p class="empty-copy">Set a monthly budget to compare it with your current month spending.</p>
+          <% } %>
+        </article>
+      </section>
+      <section class="dashboard-stack">
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2>Timeline</h2>
+            <span class="card-note">Engagement prompt</span>
+          </div>
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Last activity</span>
+            <p><%= timelineMessage %></p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

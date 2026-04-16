@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <% if (extraCss) { %><link rel="stylesheet" href="<%= extraCss %>"><% } %>
+</head>
+<body>
+  <% const navSearchValue = query && typeof query.q === "string" ? query.q : ""; %>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-row">
+        <% if (currentUser && navMeta) { %>
+          <a href="<%= currentUser ? '/dashboard' : '/' %>" class="nav-brand">
+            <span class="brand-icon">◈</span>
+            <span class="brand-mark">
+              <span class="brand-name">Spendly</span>
+              <span class="brand-tag">Money cockpit</span>
+            </span>
+          </a>
+
+          <button type="button" class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle navigation">
+            ☰
+          </button>
+        <% } else { %>
+          <a href="<%= currentUser ? '/dashboard' : '/' %>" class="nav-brand">
+            <span class="brand-icon">◈</span>
+            <span class="brand-name">Spendly</span>
+          </a>
+        <% } %>
+      </div>
+
+      <div class="nav-panel <%= currentUser ? '' : 'nav-panel--public' %>" data-nav-panel>
+        <% if (currentUser && navMeta) { %>
+          <div class="nav-left-cluster">
+            <div class="nav-links">
+              <a href="<%= navMeta.quickLinks.dashboard %>" class="<%= path === '/dashboard' ? 'is-active' : '' %>">Dashboard</a>
+              <a href="<%= navMeta.quickLinks.expenses %>">Expenses</a>
+              <a href="<%= navMeta.quickLinks.reports %>">Reports</a>
+              <a href="<%= navMeta.quickLinks.budget %>">Budgets</a>
+            </div>
+
+            <details class="nav-menu nav-menu--compact">
+              <summary class="nav-menu-trigger">Filter</summary>
+              <div class="nav-menu-panel">
+                <% navMeta.quickDateFilters.forEach((item) => { %>
+                  <a href="<%= item.href %>"><%= item.label %></a>
+                <% }) %>
+              </div>
+            </details>
+          </div>
+
+          <div class="nav-center-cluster">
+            <form method="GET" action="/dashboard" class="nav-search">
+              <span class="nav-search-icon">⌕</span>
+              <input type="text" name="q" value="<%= navSearchValue %>" placeholder="food, >500, swiggy, show last week expenses" class="nav-search-input" aria-label="Smart expense search">
+              <button type="submit" class="nav-search-submit">Go</button>
+            </form>
+            <p class="nav-search-hint">Natural search understands phrases like "show last week expenses" and amount filters like ">500".</p>
+          </div>
+
+          <div class="nav-tools">
+            <form method="POST" action="/expenses/quick-add" class="nav-quick-add">
+              <input type="text" name="quick_entry" class="nav-quick-add-input" placeholder="Quick add: ₹200 Food swiggy" aria-label="Quick add expense">
+              <button type="submit" class="nav-quick-add-button">Add</button>
+            </form>
+
+            <button type="button" class="nav-cta-button" data-modal-open="add-expense-modal">Add Expense</button>
+
+            <details class="nav-menu nav-menu--alerts">
+              <summary class="nav-menu-trigger">Alerts<% if (navMeta.alerts.length) { %> <span class="nav-badge"><%= navMeta.alerts.length %></span><% } %></summary>
+              <div class="nav-menu-panel">
+                <% if (navMeta.alerts.length) { %>
+                  <% navMeta.alerts.forEach((alert) => { %>
+                    <span class="nav-menu-copy"><%= alert %></span>
+                  <% }) %>
+                <% } else { %>
+                  <span class="nav-menu-copy">No active alerts right now.</span>
+                <% } %>
+              </div>
+            </details>
+
+            <span class="nav-health">Health <strong><%= navMeta.healthScore %>/100</strong></span>
+
+            <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+              <span data-theme-icon>🌙</span>
+              <span class="theme-toggle-label">Theme</span>
+            </button>
+
+            <details class="nav-menu">
+              <summary class="nav-profile-pill">
+                <span class="nav-profile-avatar"><%= currentUser.name.charAt(0).toUpperCase() %></span>
+                <span class="nav-profile-copy">
+                  <strong><%= currentUser.name %></strong>
+                  <small>Profile</small>
+                </span>
+              </summary>
+              <div class="nav-menu-panel">
+                <a href="/profile">My Profile</a>
+                <a href="/profile">Settings</a>
+                <a href="<%= navMeta.quickLinks.export %>">Export Data</a>
+                <a href="/logout">Logout</a>
+              </div>
+            </details>
+          </div>
+        <% } else { %>
+          <div class="nav-links">
+            <a href="/login">Sign in</a>
+            <a href="/register" class="nav-cta">Get started</a>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <% if (currentUser) { %>
+    <div class="nav-modal" id="add-expense-modal" hidden>
+      <div class="nav-modal-backdrop" data-modal-close></div>
+      <div class="nav-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="add-expense-title">
+        <button type="button" class="nav-modal-close" data-modal-close aria-label="Close add expense form">×</button>
+        <div class="nav-modal-head">
+          <p class="dashboard-eyebrow">Quick capture</p>
+          <h2 id="add-expense-title">Add an expense</h2>
+          <p>Log a spend without leaving the page, or use the full form for more control.</p>
+        </div>
+        <form method="POST" action="/expenses/add" class="nav-modal-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nav_title">Title</label>
+              <input type="text" id="nav_title" name="title" class="form-input" placeholder="Groceries, Uber, Rent" required>
+            </div>
+            <div class="form-group">
+              <label for="nav_category">Category</label>
+              <select id="nav_category" name="category" class="form-input" required>
+                <option value="">Select a category</option>
+                <% categories.forEach((category) => { %>
+                  <option value="<%= category %>"><%= category %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="nav_amount">Amount</label>
+              <input type="number" step="0.01" min="0.01" id="nav_amount" name="amount" class="form-input" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label for="nav_expense_date">Date</label>
+              <input type="date" id="nav_expense_date" name="expense_date" class="form-input" value="<%= todayKey %>" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="nav_notes">Notes</label>
+            <textarea id="nav_notes" name="notes" class="form-input form-textarea" placeholder="Optional details"></textarea>
+          </div>
+          <div class="nav-modal-actions">
+            <a href="/expenses/add" class="btn-ghost">Open full form</a>
+            <button type="submit" class="btn-primary">Save expense</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+      <a href="/dashboard" class="<%= path === '/dashboard' ? 'is-active' : '' %>">Home</a>
+      <button type="button" data-modal-open="add-expense-modal">Add</button>
+      <a href="/dashboard#reports">Reports</a>
+      <a href="/profile" class="<%= path === '/profile' ? 'is-active' : '' %>">Profile</a>
+    </nav>
+  <% } %>
+
+  <main class="main-content">
+    <% flashes.forEach((flash) => { %>
+      <div class="flash flash-<%= flash.type %>"><%= flash.text %></div>
+    <% }) %>

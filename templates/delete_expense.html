@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Expense — Spendly{% endblock %}
+
+{% block content %}
+<section class="editor-page">
+    <div class="editor-shell editor-shell--narrow">
+        <div class="editor-card confirm-card">
+            <p class="dashboard-eyebrow">Delete entry</p>
+            <h1 class="dashboard-title">Remove this expense?</h1>
+            <p class="dashboard-subtitle">This action cannot be undone.</p>
+
+            <div class="confirm-summary">
+                <div><strong>{{ expense["title"] }}</strong></div>
+                <div>{{ expense["category"] }} · ₹{{ "%.2f"|format(expense["amount"]) }}</div>
+                <div>{{ expense["expense_date"] }}</div>
+            </div>
+
+            <form method="POST" action="{{ url_for('delete_expense', id=expense['id']) }}">
+                <div class="editor-actions">
+                    <a href="{{ url_for('dashboard') }}" class="btn-ghost">Cancel</a>
+                    <button type="submit" class="btn-danger">Delete expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

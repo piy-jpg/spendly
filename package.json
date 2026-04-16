@@ -1,0 +1,20 @@
+{
+  "name": "spendly-car-dekho",
+  "version": "1.0.0",
+  "description": "Spendly expense tracker built with HTML, CSS, and Node.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.9.0",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1"
+  }
+}
