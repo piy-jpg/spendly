@@ -1,0 +1,718 @@
+/* ========================================
+   SPENDLY - MODERN EFFECTS & ANIMATIONS
+   ======================================== */
+
+/* ===== ADVANCED ANIMATIONS ===== */
+
+/* Morphing Text Animation */
+@keyframes morphText {
+  0%, 100% {
+    background-position: 0% 50%;
+    background-size: 200% 200%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Liquid Fill Animation */
+@keyframes liquidFill {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Particle Animation */
+@keyframes particle {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    transform: translate(10px, -10px) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-10px, 10px) scale(0.8);
+    opacity: 0.8;
+  }
+  30% {
+    transform: translate(15px, -15px) scale(1.2);
+    opacity: 0.6;
+  }
+  40% {
+    transform: translate(-15px, 15px) scale(0.9);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Glitch Effect */
+@keyframes glitch {
+  0%, 100% {
+    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
+                 -0.05em 0 0 rgba(0, 255, 0, 0.75),
+                 0.05em 0 0 rgba(0, 0, 255, 0.75);
+  }
+  25% {
+    text-shadow: -0.05em 0 0 rgba(255, 0, 0, 0.75),
+                 0.05em 0 0 rgba(0, 255, 0, 0.75),
+                 -0.05em 0 0 rgba(0, 0, 255, 0.75);
+  }
+  50% {
+    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
+                 -0.05em 0 0 rgba(0, 255, 0, 0.75),
+                 0.05em 0 0 rgba(0, 0, 255, 0.75);
+  }
+  75% {
+    text-shadow: -0.05em 0 0 rgba(255, 0, 0, 0.75),
+                 0.05em 0 0 rgba(0, 255, 0, 0.75),
+                 0.05em 0 0 rgba(0, 0, 255, 0.75);
+  }
+}
+
+/* Neon Glow Animation */
+@keyframes neonGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px #fff,
+                 0 0 20px #fff,
+                 0 0 30px #fff,
+                 0 0 40px #3b82f6;
+  }
+  50% {
+    text-shadow: 0 0 20px #fff,
+                 0 0 30px #fff,
+                 0 0 40px #3b82f6,
+                 0 0 50px #3b82f6;
+  }
+}
+
+/* Magnetic Button Effect */
+@keyframes magnetic {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-3px, 3px);
+  }
+  50% {
+    transform: translate(3px, -3px);
+  }
+  75% {
+    transform: translate(-3px, -3px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Typing Animation */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* ===== MODERN UTILITY CLASSES ===== */
+
+.magnetic-button {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.magnetic-button:hover {
+  animation: magnetic 0.5s ease-in-out infinite;
+}
+
+.ripple-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple-button:hover::before {
+  width: 300px;
+  height: 300px;
+  animation: ripple 0.6s ease-out;
+}
+
+.morphing-text {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: morphText 3s ease-in-out infinite;
+}
+
+.glitch-text {
+  position: relative;
+  color: #fff;
+  font-weight: bold;
+  text-transform: uppercase;
+  animation: glitch 2s infinite;
+}
+
+.neon-text {
+  color: #fff;
+  text-shadow: 0 0 10px #fff,
+               0 0 20px #fff,
+               0 0 30px #3b82f6,
+               0 0 40px #3b82f6;
+  animation: neonGlow 2s ease-in-out infinite alternate;
+}
+
+.typing-indicator::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+  background: #3b82f6;
+  border-radius: 2px;
+  animation: typing 1.5s steps(3) infinite;
+}
+
+/* ===== ADVANCED HOVER EFFECTS ===== */
+
+.hover-glow-3d {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.hover-glow-3d:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3),
+              0 20px 40px rgba(59, 130, 246, 0.2),
+              0 30px 50px rgba(59, 130, 246, 0.1);
+}
+
+.hover-tilt {
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.hover-tilt:hover {
+  transform: perspective(1000px) rotateX(10deg) rotateY(10deg);
+}
+
+.hover-morph {
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.hover-morph:hover {
+  border-radius: 50%;
+  transform: scale(1.1);
+}
+
+/* ===== ADVANCED LOADING STATES ===== */
+
+.loader-modern {
+  width: 60px;
+  height: 60px;
+  position: relative;
+}
+
+.loader-modern::before,
+.loader-modern::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+
+.loader-modern::before {
+  border-top-color: #3b82f6;
+  animation: rotate 1.5s linear infinite;
+  border-right-color: #3b82f6;
+  animation: rotate 1.5s linear infinite reverse;
+}
+
+.loader-modern::after {
+  border-bottom-color: #8b5cf6;
+  animation: rotate 1.5s linear infinite;
+  border-left-color: #8b5cf6;
+  animation: rotate 1.5s linear infinite reverse;
+}
+
+.skeleton-modern {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+/* ===== MODERN CARD DESIGNS ===== */
+
+.card-modern {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.card-modern:hover::before {
+  opacity: 1;
+}
+
+.card-modern:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
+             inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ===== MODERN BUTTONS ===== */
+
+.button-modern {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.button-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.button-modern:hover::before {
+  left: 100%;
+}
+
+.button-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.button-neon {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #3b82f6;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px #3b82f6,
+              0 0 20px #3b82f6,
+              0 0 30px #3b82f6;
+}
+
+.button-neon:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #3b82f6,
+              0 0 25px #3b82f6,
+              0 0 35px #3b82f6;
+}
+
+/* ===== MODERN FORMS ===== */
+
+.form-modern {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.form-modern:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2),
+              0 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.input-modern {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+.input-modern:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2),
+              0 0 0 20px rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== MODERN NAVIGATION ===== */
+
+.nav-modern {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-link-modern {
+  color: #333;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link-modern::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #3b82f6;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.nav-link-modern:hover::before {
+  width: 100%;
+}
+
+.nav-link-modern:hover {
+  color: #3b82f6;
+  transform: translateY(-2px);
+}
+
+/* ===== MODERN TABLES ===== */
+
+.table-modern {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.table-modern thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.table-modern th {
+  padding: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-modern tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.table-modern tbody tr:hover {
+  background: rgba(59, 130, 246, 0.05);
+  transform: scale(1.01);
+}
+
+/* ===== MODERN MODALS ===== */
+
+.modal-modern {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal-modern.show {
+  opacity: 1;
+}
+
+.modal-content-modern {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 3rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  transform: scale(0.9);
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* ===== PARTICLE EFFECTS ===== */
+
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(59, 130, 246, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle 3s ease-out infinite;
+}
+
+.particle-1 {
+  width: 4px;
+  height: 4px;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  width: 6px;
+  height: 6px;
+  left: 30%;
+  animation-delay: 0.2s;
+}
+
+.particle-3 {
+  width: 8px;
+  height: 8px;
+  left: 50%;
+  animation-delay: 0.4s;
+}
+
+.particle-4 {
+  width: 12px;
+  height: 12px;
+  left: 70%;
+  animation-delay: 0.6s;
+}
+
+.particle-5 {
+  width: 16px;
+  height: 16px;
+  left: 90%;
+  animation-delay: 0.8s;
+}
+
+/* ===== RESPONSIVE MODERN DESIGN ===== */
+
+@media (max-width: 768px) {
+  .card-modern {
+    padding: 1.5rem;
+  }
+  
+  .button-modern {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .form-modern {
+    padding: 1.5rem;
+  }
+  
+  .table-modern {
+    font-size: 14px;
+  }
+  
+  .table-modern th,
+  .table-modern td {
+    padding: 12px;
+  }
+  
+  .modal-content-modern {
+    padding: 2rem;
+    margin: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-modern {
+    padding: 1rem;
+  }
+  
+  .button-modern {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  
+  .form-modern {
+    padding: 1rem;
+  }
+  
+  .input-modern {
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  .table-modern {
+    font-size: 12px;
+  }
+  
+  .table-modern th,
+  .table-modern td {
+    padding: 8px;
+  }
+  
+  .nav-modern {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .magnetic-button,
+  .ripple-button,
+  .hover-glow-3d,
+  .hover-tilt,
+  .hover-morph,
+  .card-modern,
+  .button-modern,
+  .particle {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ===== DARK MODE MODERN ===== */
+
+@media (prefers-color-scheme: dark) {
+  .card-modern {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  
+  .button-modern {
+    background: linear-gradient(135deg, #4c1d95 0%, #1a1a2e 100%);
+  }
+  
+  .input-modern {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  
+  .table-modern {
+    background: rgba(0, 0, 0, 0.1);
+    color: #fff;
+  }
+  
+  .nav-modern {
+    background: rgba(0, 0, 0, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
