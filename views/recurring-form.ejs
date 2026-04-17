@@ -1,0 +1,256 @@
+<%- include("partials/header", { title, currentUser, flashes, extraCss: `
+<style>
+  .recurring-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group.full-width {
+    grid-column: span 2;
+  }
+  
+  label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #374151;
+  }
+  
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .form-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+  }
+  
+  .frequency-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .frequency-option {
+    position: relative;
+  }
+  
+  .frequency-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+  }
+  
+  .frequency-option label {
+    display: block;
+    padding: 0.75rem;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 0;
+  }
+  
+  .frequency-option input[type="radio"]:checked + label {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
+  
+  .frequency-option label:hover {
+    border-color: #9ca3af;
+  }
+  
+  @media (max-width: 640px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-group.full-width {
+      grid-column: span 1;
+    }
+    
+    .frequency-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+` }) %>
+
+<div class="recurring-form-container">
+  <div class="form-header">
+    <h1><%= formMode === "add" ? "Add Recurring Expense" : "Edit Recurring Expense" %></h1>
+    <p>Set up automatic tracking for regular expenses like rent, subscriptions, and bills</p>
+  </div>
+  
+  <form method="POST" class="recurring-form">
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label for="title">Title *</label>
+        <input 
+          type="text" 
+          id="title" 
+          name="title" 
+          class="form-input" 
+          placeholder="Rent, Netflix, Gym membership" 
+          value="<%= recurringExpense.title %>"
+          required
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="category">Category *</label>
+        <select id="category" name="category" class="form-select" required>
+          <option value="">Select a category</option>
+          <% categories.forEach((category) => { %>
+            <option value="<%= category %>" <%= recurringExpense.category === category ? 'selected' : '' %>>
+              <%= category %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="amount">Amount (₹) *</label>
+        <input 
+          type="number" 
+          id="amount" 
+          name="amount" 
+          class="form-input" 
+          placeholder="0.00" 
+          step="0.01" 
+          min="0.01"
+          value="<%= recurringExpense.amount %>"
+          required
+        >
+      </div>
+      
+      <div class="form-group full-width">
+        <label>Frequency *</label>
+        <div class="frequency-grid">
+          <div class="frequency-option">
+            <input type="radio" id="daily" name="frequency" value="daily" <%= recurringExpense.frequency === 'daily' ? 'checked' : '' %>>
+            <label for="daily">Daily</label>
+          </div>
+          <div class="frequency-option">
+            <input type="radio" id="weekly" name="frequency" value="weekly" <%= recurringExpense.frequency === 'weekly' ? 'checked' : '' %>>
+            <label for="weekly">Weekly</label>
+          </div>
+          <div class="frequency-option">
+            <input type="radio" id="monthly" name="frequency" value="monthly" <%= recurringExpense.frequency === 'monthly' ? 'checked' : '' %>>
+            <label for="monthly">Monthly</label>
+          </div>
+          <div class="frequency-option">
+            <input type="radio" id="yearly" name="frequency" value="yearly" <%= recurringExpense.frequency === 'yearly' ? 'checked' : '' %>>
+            <label for="yearly">Yearly</label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="start_date">Start Date *</label>
+        <input 
+          type="date" 
+          id="start_date" 
+          name="start_date" 
+          class="form-input" 
+          value="<%= recurringExpense.start_date %>"
+          required
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="end_date">End Date (optional)</label>
+        <input 
+          type="date" 
+          id="end_date" 
+          name="end_date" 
+          class="form-input" 
+          value="<%= recurringExpense.end_date || '' %>"
+          placeholder="Leave empty for no end date"
+        >
+      </div>
+      
+      <div class="form-group full-width">
+        <label for="notes">Notes (optional)</label>
+        <textarea 
+          id="notes" 
+          name="notes" 
+          class="form-textarea" 
+          placeholder="Additional details about this recurring expense"
+        ><%= recurringExpense.notes || '' %></textarea>
+      </div>
+      
+      <% if (formMode === "edit") { %>
+        <div class="form-group full-width">
+          <div class="checkbox-group">
+            <input 
+              type="checkbox" 
+              id="is_active" 
+              name="is_active" 
+              class="form-checkbox"
+              <%= recurringExpense.is_active ? 'checked' : '' %>
+            >
+            <label for="is_active" style="margin: 0;">Active (will generate expenses automatically)</label>
+          </div>
+        </div>
+      <% } %>
+    </div>
+    
+    <div class="form-actions">
+      <a href="/recurring" class="btn-ghost">Cancel</a>
+      <button type="submit" class="btn-primary">
+        <%= formMode === "add" ? "Create Recurring Expense" : "Update Recurring Expense" %>
+      </button>
+    </div>
+  </form>
+</div>
+
+<%- include("partials/footer") %>

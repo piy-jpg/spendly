@@ -7,495 +7,731 @@
   if (filters.minAmount !== "") exportParams.set("min_amount", filters.minAmount);
   if (filters.maxAmount !== "") exportParams.set("max_amount", filters.maxAmount);
 %>
-<%- include("partials/header", { title, currentUser, flashes, extraCss: null }) %>
+<%- include("partials/header", { title, currentUser, flashes, extraCss: `
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  
+  * {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .floating-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  .card-hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-hover-lift:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .pulse-dot {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>
+` }) %>
 
-<section class="dashboard-page">
-  <div class="dashboard-shell">
-    <div class="dashboard-hero">
-      <div class="dashboard-hero-copy">
-        <p class="dashboard-eyebrow"><%= greeting %>, <%= currentUser.name %></p>
-        <h1 class="dashboard-title">Your money dashboard now guides the next move.</h1>
-        <p class="dashboard-subtitle">See daily habits, pacing, budget risk, and the specific actions that keep your month under control.</p>
-        <div class="hero-chip-row">
-          <div class="hero-chip">
-            <span class="hero-chip-label">Health score</span>
-            <strong><%= healthScore %>/100</strong>
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  <!-- Background Pattern -->
+  <div class="fixed inset-0 opacity-30">
+    <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2394a3b" opacity=".4"%3E%3Cpath d="M36 34v-4h-2v4h2v4h-2v-4zm-16 0v-4h-2v4h2v4h-2v-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E'); background-size: 60px 60px;"></div>
+  </div>
+  
+  <div class="relative z-10">
+    <!-- Header Section -->
+    <header class="glass-morphism rounded-3xl p-8 mb-8 border-white/20">
+      <div class="flex flex-wrap lg:flex-nowrap justify-between items-stretch gap-8">
+        <!-- Welcome Section -->
+        <div class="flex-1 min-w-[300px]">
+          <div class="floating-animation">
+            <h1 class="text-4xl font-black mb-3 flex items-center gap-3">
+              <i class="fas fa-chart-line text-purple-600"></i>
+              <span class="gradient-text bg-clip-text text-transparent">Team Dashboard</span>
+            </h1>
+            <p class="text-gray-600 text-lg"><%= greeting %>, <span class="font-semibold text-purple-700"><%= currentUser.name %></span> • Manage your team's expenses and collaborate efficiently</p>
           </div>
-          <div class="hero-chip">
-            <span class="hero-chip-label">Today</span>
-            <strong>₹<%= todayStats.todaySpend.toFixed(2) %></strong>
-          </div>
-          <div class="hero-chip">
-            <span class="hero-chip-label">Run rate</span>
-            <strong>₹<%= velocity.dailyRate.toFixed(0) %>/day</strong>
-          </div>
         </div>
-      </div>
-      <div class="header-actions">
-        <a href="/expenses/export?<%= exportParams.toString() %>" class="btn-ghost">Export CSV</a>
-        <a href="/expenses/add" class="btn-primary">Add expense</a>
-      </div>
-    </div>
-
-    <% if (!entryProgress.complete) { %>
-      <section class="dashboard-card progress-card">
-        <div class="card-head">
-          <h2>Unlock smart insights</h2>
-          <span class="card-note"><%= Math.min(entryProgress.totalCount, entryProgress.target) %>/<%= entryProgress.target %> entries added</span>
-        </div>
-        <p class="dashboard-subtitle">Add your first <%= entryProgress.target %> expenses to unlock stronger trend analysis, smarter comparisons, and more reliable forecasts.</p>
-        <div class="progress-track">
-          <div class="progress-fill" style="width: <%= entryProgress.percent %>%"></div>
-        </div>
-      </section>
-    <% } %>
-
-    <% if (budgetAlert) { %>
-      <section class="budget-alert budget-alert--<%= budgetAlert.tier %>">
-        <div>
-          <p class="budget-alert-label"><%= budgetAlert.label %></p>
-          <p class="budget-alert-copy"><%= budgetAlert.message %></p>
-        </div>
-        <span class="budget-alert-stat"><%= budgetUsedPct %>% used</span>
-      </section>
-    <% } %>
-
-    <form method="GET" action="/dashboard" class="filter-card">
-      <div class="card-head">
-        <h2>Advanced filters</h2>
-        <span class="card-note">Search title, notes, category, date, and amount range</span>
-      </div>
-      <div class="filter-grid filter-grid--advanced">
-        <div class="form-group">
-          <label for="q">Search</label>
-          <input id="q" name="q" class="form-input" placeholder="Title or notes" value="<%= filters.q %>">
-        </div>
-        <div class="form-group">
-          <label>Categories</label>
-          <div class="filter-chip-list">
-            <% categories.forEach((category) => { %>
-              <label class="filter-chip <%= filters.categories.includes(category) ? 'filter-chip--active' : '' %>">
-                <input type="checkbox" name="categories" value="<%= category %>" <%= filters.categories.includes(category) ? "checked" : "" %>>
-                <span><%= category %></span>
-              </label>
-            <% }) %>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="min_amount">Min amount</label>
-          <input type="number" step="0.01" min="0" id="min_amount" name="min_amount" class="form-input" placeholder="0.00" value="<%= filters.minAmount %>">
-        </div>
-        <div class="form-group">
-          <label for="max_amount">Max amount</label>
-          <input type="number" step="0.01" min="0" id="max_amount" name="max_amount" class="form-input" placeholder="5000.00" value="<%= filters.maxAmount %>">
-        </div>
-        <div class="form-group">
-          <label for="start_date">From</label>
-          <input type="date" id="start_date" name="start_date" class="form-input" value="<%= filters.startDate %>">
-        </div>
-        <div class="form-group">
-          <label for="end_date">To</label>
-          <input type="date" id="end_date" name="end_date" class="form-input" value="<%= filters.endDate %>">
-        </div>
-      </div>
-      <div class="filter-actions">
-        <% if (hasActiveFilters) { %>
-          <a href="/dashboard" class="btn-ghost">Clear filters</a>
-        <% } %>
-        <button type="submit" class="btn-primary">Apply filters</button>
-      </div>
-    </form>
-
-    <section class="dashboard-card quick-add-card" id="expenses">
-      <div class="card-head">
-        <h2>Quick add</h2>
-        <span class="card-note">One-click shortcuts</span>
-      </div>
-      <div class="quick-add-row">
-        <% quickAddCategories.forEach((category) => { %>
-          <a href="/expenses/add?category=<%= encodeURIComponent(category) %>" class="quick-add-pill">+ <%= category %></a>
-        <% }) %>
-      </div>
-    </section>
-
-    <div class="stats-grid stats-grid--five">
-      <article class="stat-panel stat-panel--highlight">
-        <span class="stat-label">Today</span>
-        <strong class="stat-value">₹<%= todayStats.todaySpend.toFixed(2) %></strong>
-        <span class="stat-meta">
-          <% if (todayStats.deltaPct === null) { %>
-            Build 2 days of history to compare daily habits
-          <% } else { %>
-            <%= todayStats.delta >= 0 ? "Up" : "Down" %> <%= Math.abs(todayStats.deltaPct) %>% vs yesterday
-          <% } %>
-        </span>
-      </article>
-      <article class="stat-panel">
-        <span class="stat-label">7-day spend</span>
-        <strong class="stat-value stat-value--small">₹<%= weeklySummary.total.toFixed(2) %></strong>
-        <span class="stat-meta">Highest: <%= weeklySummary.highestDay.label %> · ₹<%= weeklySummary.highestDay.total.toFixed(0) %></span>
-      </article>
-      <article class="stat-panel">
-        <span class="stat-label">This month</span>
-        <strong class="stat-value stat-value--small">₹<%= monthlySpend.toFixed(2) %></strong>
-        <span class="stat-meta">Current calendar month spend</span>
-      </article>
-      <article class="stat-panel">
-        <span class="stat-label">Run rate</span>
-        <strong class="stat-value stat-value--small">₹<%= velocity.dailyRate.toFixed(2) %>/day</strong>
-        <span class="stat-meta">Projected month end: ₹<%= velocity.projectedTotal.toFixed(0) %></span>
-      </article>
-      <article class="stat-panel">
-        <span class="stat-label">Average expense</span>
-        <strong class="stat-value stat-value--small">₹<%= averageAmount.toFixed(2) %></strong>
-        <span class="stat-meta"><%= timelineMessage %></span>
-      </article>
-    </div>
-
-    <div class="analytics-grid" id="reports">
-      <article class="dashboard-card chart-card">
-        <div class="card-head">
-          <h2>Category split</h2>
-          <span class="card-note">Pie chart</span>
-        </div>
-        <% if (pieChart.segments.length) { %>
-          <div class="pie-layout">
-            <div class="pie-chart" style="background: <%= pieChart.gradient %>;">
-              <div class="pie-chart-hole">
-                <span>Total</span>
-                <strong>₹<%= totalAmount.toFixed(0) %></strong>
-              </div>
+        
+        <!-- Enhanced Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 flex-shrink-0">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 text-center border-white/30">
+            <div class="relative">
+              <div class="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full pulse-dot"></div>
+              <i class="fas fa-users text-3xl text-purple-600 mb-3"></i>
+              <div class="text-3xl font-bold mb-2 text-gray-800">12</div>
+              <div class="text-sm text-gray-600 font-medium">Team Members</div>
             </div>
-            <div class="chart-legend">
-              <% pieChart.segments.forEach((segment) => { %>
-                <div class="legend-row">
-                  <span class="legend-dot" style="background: <%= segment.color %>;"></span>
-                  <span><%= segment.category %></span>
-                  <strong><%= segment.percentage %>%</strong>
+          </div>
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 text-center border-white/30">
+            <div class="relative">
+              <div class="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 rounded-full pulse-dot"></div>
+              <i class="fas fa-wallet text-3xl text-green-600 mb-3"></i>
+              <div class="text-3xl font-bold mb-2 text-gray-800">₹<%= todayStats.todaySpend.toFixed(0) %></div>
+              <div class="text-sm text-gray-600 font-medium">Today's Spend</div>
+            </div>
+          </div>
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 text-center border-white/30">
+            <div class="relative">
+              <div class="absolute -top-2 -right-2 w-4 h-4 bg-orange-500 rounded-full pulse-dot"></div>
+              <i class="fas fa-chart-bar text-3xl text-blue-600 mb-3"></i>
+              <div class="text-3xl font-bold mb-2 text-gray-800">₹<%= velocity.dailyRate.toFixed(0) %></div>
+              <div class="text-sm text-gray-600 font-medium">Daily Average</div>
+            </div>
+          </div>
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 text-center border-white/30">
+            <div class="relative">
+              <div class="absolute -top-2 -right-2 w-4 h-4 bg-purple-500 rounded-full pulse-dot"></div>
+              <i class="fas fa-heartbeat text-3xl text-red-600 mb-3"></i>
+              <div class="text-3xl font-bold mb-2 text-gray-800"><%= healthScore %>/100</div>
+              <div class="text-sm text-gray-600 font-medium">Health Score</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+  <!-- Main Grid -->
+  <div class="grid lg:grid-cols-2 gap-8 mb-8">
+    <!-- Team Members Card -->
+    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fas fa-users text-purple-600 text-2xl"></i>
+          <span class="gradient-text bg-clip-text text-transparent">Team Members</span>
+        </h3>
+        <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+          <i class="fas fa-user-plus mr-2"></i>
+          Invite Members
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="absolute top-4 right-4">
+              <div class="w-3 h-3 bg-green-500 rounded-full pulse-dot"></div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-xl shadow-xl">
+                  JD
                 </div>
-              <% }) %>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <i class="fas fa-check text-white text-xs"></i>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">John Doe</h4>
+                  <span class="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-medium rounded-full">Team Lead</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">Leading the team with strategic vision and exceptional execution</p>
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <i class="fas fa-envelope"></i>
+                  <i class="fas fa-phone"></i>
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+              </div>
             </div>
           </div>
-        <% } else { %>
-          <div class="empty-state empty-state--compact">
-            <h3>Category split unlocks after a few entries</h3>
-            <p>Add expenses across categories to reveal how your money is distributed.</p>
-          </div>
-        <% } %>
-      </article>
-
-      <article class="dashboard-card chart-card">
-        <div class="card-head">
-          <h2>Monthly trend</h2>
-          <span class="card-note">Line graph</span>
         </div>
-        <% if (lineChart.points.length) { %>
-          <svg class="line-chart" viewBox="0 0 320 160" role="img" aria-label="Monthly spending trend">
-            <line x1="0" y1="140" x2="320" y2="140" class="chart-axis"></line>
-            <path d="<%= lineChart.path %>" class="line-chart-path"></path>
-            <% lineChart.points.forEach((point) => { %>
-              <circle cx="<%= point.x %>" cy="<%= point.y %>" r="4" class="line-chart-point"></circle>
-            <% }) %>
-          </svg>
-          <div class="line-chart-labels">
-            <% lineChart.points.forEach((point) => { %>
-              <div class="line-chart-label">
-                <span><%= point.label %></span>
-                <strong>₹<%= point.total.toFixed(0) %></strong>
-              </div>
-            <% }) %>
-          </div>
-        <% } else { %>
-          <div class="empty-state empty-state--compact">
-            <h3>No trend yet</h3>
-            <p>Monthly trend appears once there is spending history across more dates.</p>
-          </div>
-        <% } %>
-      </article>
-
-      <article class="dashboard-card chart-card">
-        <div class="card-head">
-          <h2>Weekly comparison</h2>
-          <span class="card-note">Bar chart</span>
-        </div>
-        <% if (weeklyChartRows.length) { %>
-          <div class="bar-chart">
-            <% weeklyChartRows.forEach((row) => { %>
-              <div class="bar-chart-column">
-                <div class="bar-chart-track">
-                  <div class="bar-chart-fill" style="height: <%= Math.max(12, Math.round((row.total / weeklyChartMax) * 100)) %>%"></div>
+        
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="absolute top-4 right-4">
+              <div class="w-3 h-3 bg-green-500 rounded-full pulse-dot"></div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xl shadow-xl">
+                  AS
                 </div>
-                <strong>₹<%= row.total.toFixed(0) %></strong>
-                <span><%= row.label %></span>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <i class="fas fa-check text-white text-xs"></i>
+                </div>
               </div>
-            <% }) %>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">Alice Smith</h4>
+                  <span class="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-medium rounded-full">Developer</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">Full-stack developer with expertise in modern web technologies and cloud architecture</p>
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <i class="fab fa-github"></i>
+                  <i class="fab fa-linkedin"></i>
+                  <i class="fas fa-globe"></i>
+                </div>
+              </div>
+            </div>
           </div>
-        <% } else { %>
-          <div class="empty-state empty-state--compact">
-            <h3>No weekly comparison yet</h3>
-            <p>Weekly bars appear once you have a few logged expenses.</p>
+        </div>
+        
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="absolute top-4 right-4">
+              <div class="w-3 h-3 bg-yellow-500 rounded-full pulse-dot"></div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xl shadow-xl">
+                  BJ
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">Bob Johnson</h4>
+                  <span class="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-medium rounded-full">Designer</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">Creative designer specializing in UI/UX with a passion for beautiful and functional design</p>
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                  <i class="fab fa-dribbble"></i>
+                  <i class="fab fa-behance"></i>
+                  <i class="fas fa-palette"></i>
+                </div>
+              </div>
+            </div>
           </div>
-        <% } %>
-      </article>
+        </div>
+        
+        <div class="group relative opacity-75">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="absolute top-4 right-4">
+              <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-600 to-gray-400 flex items-center justify-center text-white font-bold text-xl shadow-xl opacity-75">
+                  EW
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">Emma Wilson</h4>
+                  <span class="px-3 py-1 bg-gray-600 text-white text-xs font-medium rounded-full">Marketing</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-3">Marketing specialist focused on brand growth and digital marketing strategies</p>
+                <div class="flex items-center gap-4 text-sm text-gray-400">
+                  <i class="fas fa-envelope"></i>
+                  <i class="fas fa-phone"></i>
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="dashboard-grid dashboard-grid--advisory" id="insights">
-      <section class="dashboard-stack">
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>AI advisor</h2>
-            <span class="card-note">Actionable recommendations</span>
-          </div>
-          <div class="insight-list">
-            <% advisorMessages.forEach((message) => { %>
-              <div class="insight-item insight-item--smart">
-                <span class="insight-label">Recommendation</span>
-                <p><%= message %></p>
+    <!-- Recent Activities Card -->
+    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fas fa-stream text-purple-600 text-2xl"></i>
+          <span class="gradient-text bg-clip-text text-transparent">Recent Activities</span>
+        </h3>
+        <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
+          <i class="fas fa-filter mr-2"></i>
+          Filter
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-lg">
+                  <i class="fas fa-plus text-xl"></i>
+                </div>
               </div>
-            <% }) %>
-          </div>
-        </article>
-
-        <article class="dashboard-card" id="budget">
-          <div class="card-head">
-            <h2>Risk alerts</h2>
-            <span class="card-note">Watch this closely</span>
-          </div>
-          <% if (riskAlerts.length) { %>
-            <div class="alert-list">
-              <% riskAlerts.forEach((alert) => { %>
-                <div class="alert-item"><%= alert %></div>
-              <% }) %>
-            </div>
-          <% } else { %>
-            <div class="empty-state empty-state--compact">
-              <h3>No active risk alerts</h3>
-              <p>Your current pace looks stable right now.</p>
-            </div>
-          <% } %>
-        </article>
-
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Category trends</h2>
-            <span class="card-note">Behavior shifts</span>
-          </div>
-          <% if (categoryTrends.length) { %>
-            <div class="category-stack">
-              <% categoryTrends.slice(0, 3).forEach((trend) => { %>
-                <div class="category-row">
-                  <div class="category-row-top">
-                    <span><%= trend.category %></span>
-                    <span class="<%= trend.delta >= 0 ? 'metric-up' : 'metric-down' %>">
-                      <%= trend.delta >= 0 ? '+' : '-' %>₹<%= Math.abs(trend.delta).toFixed(0) %>
-                    </span>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">New Expense Added</h4>
+                  <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">+₹1,200</span>
+                </div>
+                <p class="text-gray-700 mb-2">Team Lunch at Downtown Restaurant</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <i class="fas fa-user"></i>
+                    <span>John Doe</span>
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-clock"></i>
+                    <span>2 hours ago</span>
                   </div>
-                  <div class="category-row-bottom">
-                    <% if (trend.pct === null) { %>
-                      New spending pattern this week
-                    <% } else { %>
-                      <%= trend.direction === 'up' ? 'Increased' : 'Dropped' %> by <%= Math.abs(trend.pct) %>% vs last week
-                    <% } %>
+                  <div class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300 cursor-pointer">
+                    View Details
                   </div>
                 </div>
-              <% }) %>
+              </div>
             </div>
-          <% } else { %>
-            <div class="empty-state empty-state--compact">
-              <h3>Not enough category movement yet</h3>
-              <p>Spendly will call out rising and falling categories as weekly patterns build.</p>
-            </div>
-          <% } %>
-        </article>
-      </section>
-
-      <section class="dashboard-stack">
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Financial health breakdown</h2>
-            <span class="card-note">Why your score is <%= healthScore %></span>
           </div>
-          <div class="score-breakdown">
-            <% healthBreakdown.items.forEach((item) => { %>
-              <div class="score-row">
-                <div class="score-row-top">
-                  <span><%= item.label %></span>
-                  <strong><%= item.value %>%</strong>
-                </div>
-                <div class="score-bar-track">
-                  <div class="score-bar-fill" style="width: <%= item.value %>%"></div>
+        </div>
+        
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-lg">
+                  <i class="fas fa-chart-line text-xl"></i>
                 </div>
               </div>
-            <% }) %>
-          </div>
-        </article>
-
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Weekly summary</h2>
-            <span class="card-note">Compact overview</span>
-          </div>
-          <div class="mini-metrics">
-            <div class="mini-metric">
-              <span>Total this week</span>
-              <strong>₹<%= weeklySummary.total.toFixed(2) %></strong>
-            </div>
-            <div class="mini-metric">
-              <span>Highest day</span>
-              <strong><%= weeklySummary.highestDay.label %> · ₹<%= weeklySummary.highestDay.total.toFixed(0) %></strong>
-            </div>
-            <div class="mini-metric">
-              <span>Lowest day</span>
-              <strong><%= weeklySummary.lowestDay.label %> · ₹<%= weeklySummary.lowestDay.total.toFixed(0) %></strong>
-            </div>
-          </div>
-        </article>
-
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Savings goal</h2>
-            <span class="card-note">Potential monthly savings</span>
-          </div>
-          <div class="goal-card">
-            <div class="goal-amounts">
-              <div>
-                <span class="stat-label">Goal</span>
-                <strong>₹<%= savingsGoal.target.toFixed(0) %></strong>
-              </div>
-              <div>
-                <span class="stat-label">Saved</span>
-                <strong>₹<%= savingsGoal.saved.toFixed(0) %></strong>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">Budget Updated</h4>
+                  <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Marketing</span>
+                </div>
+                <p class="text-gray-700 mb-2">Monthly budget increased by 15% for Q4 marketing campaigns</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <i class="fas fa-user"></i>
+                    <span>Alice Smith</span>
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-clock"></i>
+                    <span>5 hours ago</span>
+                  </div>
+                  <div class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-all duration-300 cursor-pointer">
+                    View Details
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="progress-track progress-track--goal">
-              <div class="progress-fill progress-fill--goal" style="width: <%= savingsGoal.percent %>%"></div>
-            </div>
-            <p class="card-note"><%= savingsGoal.percent %>% of this month's potential savings target</p>
           </div>
-        </article>
-
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Smart insights</h2>
-            <span class="card-note">Behavior snapshots</span>
-          </div>
-          <div class="insight-list">
-            <% insights.forEach((insight) => { %>
-              <div class="insight-item insight-item--smart">
-                <span class="insight-label"><%= insight.label %></span>
-                <strong><%= insight.value %></strong>
-                <p><%= insight.detail %></p>
+        </div>
+        
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg">
+                  <i class="fas fa-sync text-xl"></i>
+                </div>
               </div>
-            <% }) %>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">Recurring Generated</h4>
+                  <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Office Rent</span>
+                </div>
+                <p class="text-gray-700 mb-2">Monthly office rent automatically generated and categorized</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <i class="fas fa-robot"></i>
+                    <span>System</span>
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-clock"></i>
+                    <span>1 day ago</span>
+                  </div>
+                  <div class="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full hover:bg-orange-200 transition-all duration-300 cursor-pointer">
+                    View Details
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
-      </section>
-    </div>
-
-    <section class="dashboard-card">
-      <div class="card-head">
-        <h2>Recent expenses</h2>
-        <% if (expenses.length) { %>
-          <span class="card-note"><%= expenses.length %> item<%= expenses.length === 1 ? "" : "s" %></span>
-        <% } %>
+        </div>
+        
+        <div class="group relative">
+          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+            <div class="flex items-start gap-4">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                  <i class="fas fa-user-plus text-xl"></i>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-lg font-bold text-gray-800">New Team Member</h4>
+                  <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">Carol Davis</span>
+                </div>
+                <p class="text-gray-700 mb-2">Senior developer joined the team with expertise in backend systems</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin</span>
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-clock"></i>
+                    <span>2 days ago</span>
+                  </div>
+                  <div class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 transition-all duration-300 cursor-pointer">
+                    Welcome
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <% if (expenses.length) { %>
-        <div class="table-wrap">
-          <table class="expense-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% expenses.forEach((expense) => { %>
-                <tr>
-                  <td>
-                    <div class="expense-title"><%= expense.title %></div>
-                    <% if (expense.notes) { %><div class="expense-notes"><%= expense.notes %></div><% } %>
-                  </td>
-                  <td><%= expense.category %></td>
-                  <td>₹<%= Number(expense.amount).toFixed(2) %></td>
-                  <td><%= expense.expense_date %></td>
-                  <td class="expense-actions">
-                    <a href="/expenses/<%= expense.id %>/edit">Edit</a>
-                    <a href="/expenses/<%= expense.id %>/delete" class="link-danger">Delete</a>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-      <% } else { %>
-        <div class="empty-state empty-state--guided">
-          <h3>Add your first <%= entryProgress.target %> expenses to unlock insights</h3>
-          <p>You currently have <%= entryProgress.totalCount %> logged. Add a few more entries and Spendly will start showing smarter forecasts, category movement, and daily behavior signals.</p>
-          <div class="progress-track">
-            <div class="progress-fill" style="width: <%= entryProgress.percent %>%"></div>
-          </div>
-          <a href="/expenses/add" class="btn-primary">Add expense</a>
-        </div>
-      <% } %>
-    </section>
-
-    <div class="dashboard-grid">
-      <section class="dashboard-stack">
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Monthly budget</h2>
-            <span class="card-note">Alerts at 50%, 80%, and 100%</span>
-          </div>
-          <form method="POST" action="/budget" class="budget-form">
-            <div class="budget-input-row">
-              <input type="number" step="0.01" min="0" name="monthly_budget" class="form-input" value="<%= monthlyBudget || '' %>" placeholder="Set monthly budget">
-              <button type="submit" class="btn-primary">Save</button>
-            </div>
-          </form>
-          <% if (monthlyBudget) { %>
-            <div class="budget-meter">
-              <div class="budget-meter-track">
-                <div class="budget-meter-fill <%= budgetUsedPct > 100 ? 'budget-meter-fill--over' : '' %>" style="width: <%= Math.min(budgetUsedPct, 100) %>%"></div>
-              </div>
-              <div class="budget-meta">
-                <span>Used <%= budgetUsedPct %>%</span>
-                <span>
-                  <% if (remainingBudget >= 0) { %>
-                    ₹<%= remainingBudget.toFixed(2) %> left
-                  <% } else { %>
-                    ₹<%= Math.abs(remainingBudget).toFixed(2) %> over budget
-                  <% } %>
-                </span>
-              </div>
-              <div class="budget-thresholds">
-                <span class="<%= budgetUsedPct >= 50 ? 'budget-threshold--active' : '' %>">50%</span>
-                <span class="<%= budgetUsedPct >= 80 ? 'budget-threshold--active' : '' %>">80%</span>
-                <span class="<%= budgetUsedPct >= 100 ? 'budget-threshold--active' : '' %>">100%</span>
-              </div>
-            </div>
-          <% } else { %>
-            <p class="empty-copy">Set a monthly budget to compare it with your current month spending.</p>
-          <% } %>
-        </article>
-      </section>
-      <section class="dashboard-stack">
-        <article class="dashboard-card">
-          <div class="card-head">
-            <h2>Timeline</h2>
-            <span class="card-note">Engagement prompt</span>
-          </div>
-          <div class="insight-item insight-item--smart">
-            <span class="insight-label">Last activity</span>
-            <p><%= timelineMessage %></p>
-          </div>
-        </article>
-      </section>
     </div>
   </div>
-</section>
+
+  <!-- Bottom Grid -->
+  <div class="grid lg:grid-cols-2 gap-8">
+    <!-- Team Spending Chart -->
+    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fas fa-chart-area text-purple-600 text-2xl"></i>
+          <span class="gradient-text bg-clip-text text-transparent">Team Spending Trends</span>
+        </h3>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            This Week
+          </button>
+          <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm font-medium">
+            <i class="fas fa-download mr-2"></i>
+            Export
+          </button>
+        </div>
+      </div>
+      
+      <div class="relative">
+        <div class="absolute top-4 right-4 z-10">
+          <div class="flex flex-col gap-2">
+            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+          </div>
+        </div>
+        <div class="h-96 bg-gradient-to-br from-white/50 to-blue-50/30 rounded-2xl p-4 border border-white/20">
+          <canvas id="teamSpendingChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4 mt-6">
+        <div class="text-center p-4 bg-blue-50 rounded-xl">
+          <div class="text-2xl font-bold text-blue-600 mb-1">₹18,200</div>
+          <div class="text-sm text-gray-600">This Week</div>
+        </div>
+        <div class="text-center p-4 bg-green-50 rounded-xl">
+          <div class="text-2xl font-bold text-green-600 mb-1">+12.5%</div>
+          <div class="text-sm text-gray-600">vs Last Week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fas fa-bolt text-purple-600 text-2xl"></i>
+          <span class="gradient-text bg-clip-text text-transparent">Quick Actions</span>
+        </h3>
+        <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
+          <i class="fas fa-cog mr-2"></i>
+          Customize
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div onclick="window.location.href='/expenses/add'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-purple-500">
+          <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative z-10 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <i class="fas fa-plus text-2xl"></i>
+            </div>
+            <div class="text-xl font-bold mb-2 text-gray-800">Add Expense</div>
+            <div class="text-gray-600 text-sm leading-relaxed">Quickly log a new team expense</div>
+          </div>
+        </div>
+        
+        <div onclick="window.location.href='/recurring/add'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-blue-500">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative z-10 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <i class="fas fa-sync text-2xl"></i>
+            </div>
+            <div class="text-xl font-bold mb-2 text-gray-800">Setup Recurring</div>
+            <div class="text-gray-600 text-sm leading-relaxed">Create automatic recurring expenses</div>
+          </div>
+        </div>
+        
+        <div onclick="window.location.href='/analytics'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-orange-500">
+          <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative z-10 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <i class="fas fa-chart-pie text-2xl"></i>
+            </div>
+            <div class="text-xl font-bold mb-2 text-gray-800">View Analytics</div>
+            <div class="text-gray-600 text-sm leading-relaxed">Deep dive into spending patterns</div>
+          </div>
+        </div>
+        
+        <div onclick="window.location.href='/team/invite'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-indigo-500">
+          <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="relative z-10 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <i class="fas fa-user-plus text-2xl"></i>
+            </div>
+            <div class="text-xl font-bold mb-2 text-gray-800">Invite Member</div>
+            <div class="text-gray-600 text-sm leading-relaxed">Add new team members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Expenses -->
+  <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+        <i class="fas fa-receipt text-purple-600 text-2xl"></i>
+        <span class="gradient-text bg-clip-text text-transparent">Recent Team Expenses</span>
+      </h3>
+      <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
+        <i class="fas fa-filter mr-2"></i>
+        Filter by Category
+      </button>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="group relative">
+        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+          <div class="flex items-start gap-4">
+            <div class="relative">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-xl">
+                <i class="fas fa-utensils text-2xl"></i>
+              </div>
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                New
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-lg font-bold text-gray-800">Team Lunch</h4>
+                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹1,200</span>
+              </div>
+              <p class="text-gray-700 mb-3">Team lunch at Downtown Restaurant for project celebration</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-xs">
+                    JD
+                  </div>
+                  <span>John Doe</span>
+                  <span class="mx-2">•</span>
+                  <i class="fas fa-clock"></i>
+                  <span>Today, 1:30 PM</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Food</span>
+                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
+                    <i class="fas fa-eye mr-1"></i>
+                    View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="group relative">
+        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+          <div class="flex items-start gap-4">
+            <div class="relative">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-xl">
+                <i class="fas fa-laptop-code text-2xl"></i>
+              </div>
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                New
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-lg font-bold text-gray-800">Software License</h4>
+                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹5,000</span>
+              </div>
+              <p class="text-gray-700 mb-3">Annual subscription for development tools and software suite</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xs">
+                    AS
+                  </div>
+                  <span>Alice Smith</span>
+                  <span class="mx-2">•</span>
+                  <i class="fas fa-clock"></i>
+                  <span>Today, 10:15 AM</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Software</span>
+                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
+                    <i class="fas fa-eye mr-1"></i>
+                    View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="group relative">
+        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+          <div class="flex items-start gap-4">
+            <div class="relative">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-xl">
+                <i class="fas fa-car text-2xl"></i>
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-lg font-bold text-gray-800">Travel Expenses</h4>
+                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹3,500</span>
+              </div>
+              <p class="text-gray-700 mb-3">Business trip to client meeting including accommodation and transport</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xs">
+                    BJ
+                  </div>
+                  <span>Bob Johnson</span>
+                  <span class="mx-2">•</span>
+                  <i class="fas fa-clock"></i>
+                  <span>Yesterday</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Travel</span>
+                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
+                    <i class="fas fa-eye mr-1"></i>
+                    View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="group relative">
+        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
+          <div class="flex items-start gap-4">
+            <div class="relative">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl">
+                <i class="fas fa-coffee text-2xl"></i>
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-lg font-bold text-gray-800">Office Supplies</h4>
+                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹800</span>
+              </div>
+              <p class="text-gray-700 mb-3">Stationery, printer ink, and other office essentials</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-600 to-gray-400 flex items-center justify-center text-white font-bold text-xs">
+                    EW
+                  </div>
+                  <span>Emma Wilson</span>
+                  <span class="mx-2">•</span>
+                  <i class="fas fa-clock"></i>
+                  <span>2 days ago</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Supplies</span>
+                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
+                    <i class="fas fa-eye mr-1"></i>
+                    View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-8 text-center">
+      <button class="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-xl hover:from-purple-700 hover:to-purple-900 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+        <i class="fas fa-plus-circle mr-2"></i>
+        View All Expenses
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Team Spending Chart
+  const ctx = document.getElementById('teamSpendingChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [
+        {
+          label: 'This Week',
+          data: [2500, 3200, 2800, 4100, 3600, 1200, 800],
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4
+        },
+        {
+          label: 'Last Week',
+          data: [2200, 2800, 3100, 3500, 3200, 1500, 900],
+          borderColor: 'rgb(156, 163, 175)',
+          backgroundColor: 'rgba(156, 163, 175, 0.1)',
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₹' + value.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
 
 <%- include("partials/footer") %>

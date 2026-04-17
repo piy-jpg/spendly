@@ -1,0 +1,193 @@
+<%- include("partials/header", { title, currentUser, flashes, extraCss: `
+<style>
+  .recurring-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .recurring-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .recurring-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .recurring-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid;
+  }
+  
+  .recurring-card.active {
+    border-left-color: #10b981;
+  }
+  
+  .recurring-card.inactive {
+    border-left-color: #ef4444;
+    opacity: 0.7;
+  }
+  
+  .recurring-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+  }
+  
+  .recurring-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .recurring-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #059669;
+  }
+  
+  .recurring-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .detail-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+  
+  .detail-value {
+    font-weight: 500;
+  }
+  
+  .recurring-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .status-badge.active {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-badge.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+  }
+  
+  .empty-state h3 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+  }
+</style>
+` }) %>
+
+<div class="recurring-container">
+  <div class="recurring-header">
+    <div>
+      <h1>Recurring Expenses</h1>
+      <p>Manage your automatic recurring expenses and subscriptions</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <form method="POST" action="/recurring/generate" style="display: inline;">
+        <button type="submit" class="btn-ghost">Generate Now</button>
+      </form>
+      <a href="/recurring/add" class="btn-primary">Add Recurring</a>
+    </div>
+  </div>
+  
+  <% if (recurringExpenses.length === 0) { %>
+    <div class="empty-state">
+      <h3>No recurring expenses yet</h3>
+      <p>Set up recurring expenses for things like rent, subscriptions, and bills to automatically track them.</p>
+      <a href="/recurring/add" class="btn-primary">Add Your First Recurring Expense</a>
+    </div>
+  <% } else { %>
+    <div class="recurring-grid">
+      <% recurringExpenses.forEach((recurring) => { %>
+        <div class="recurring-card <%= recurring.is_active ? 'active' : 'inactive' %>">
+          <div class="recurring-card-header">
+            <div>
+              <h3 class="recurring-title"><%= recurring.title %></h3>
+              <div class="recurring-amount">₹<%= recurring.amount.toFixed(2) %></div>
+            </div>
+            <span class="status-badge <%= recurring.is_active ? 'active' : 'inactive' %>">
+              <%= recurring.is_active ? 'Active' : 'Inactive' %>
+            </span>
+          </div>
+          
+          <div class="recurring-details">
+            <div class="detail-item">
+              <span class="detail-label">Category</span>
+              <span class="detail-value"><%= recurring.category %></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Frequency</span>
+              <span class="detail-value"><%= recurring.frequency.charAt(0).toUpperCase() + recurring.frequency.slice(1) %></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Start Date</span>
+              <span class="detail-value"><%= recurring.start_date %></span>
+            </div>
+            <% if (recurring.end_date) { %>
+              <div class="detail-item">
+                <span class="detail-label">End Date</span>
+                <span class="detail-value"><%= recurring.end_date %></span>
+              </div>
+            <% } %>
+            <% if (recurring.last_generated) { %>
+              <div class="detail-item">
+                <span class="detail-label">Last Generated</span>
+                <span class="detail-value"><%= recurring.last_generated %></span>
+              </div>
+            <% } %>
+          </div>
+          
+          <% if (recurring.notes) { %>
+            <p style="margin-bottom: 1rem; color: #6b7280;"><%= recurring.notes %></p>
+          <% } %>
+          
+          <div class="recurring-actions">
+            <a href="/recurring/<%= recurring.id %>/edit" class="btn-ghost">Edit</a>
+            <form method="POST" action="/recurring/<%= recurring.id %>/delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this recurring expense?');">
+              <button type="submit" class="btn-ghost" style="color: #ef4444;">Delete</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<%- include("partials/footer") %>

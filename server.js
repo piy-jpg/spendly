@@ -16,6 +16,16 @@ const {
   getExpenseSummary,
   getBudgetForUser,
   upsertBudget,
+  getSpendingTrends,
+  getCategoryBreakdown,
+  getDailySpendingPattern,
+  getMonthlyComparison,
+  createRecurringExpense,
+  getRecurringExpensesForUser,
+  getRecurringExpenseById,
+  updateRecurringExpense,
+  deleteRecurringExpense,
+  generateRecurringExpenses,
 } = require("./lib/db");
 
 const app = express();
@@ -302,6 +312,57 @@ function parseExpenseForm(body) {
       amount: Number(amount.toFixed(2)),
       expenseDate,
       notes,
+    },
+  };
+}
+
+function parseRecurringForm(body) {
+  const title = String(body.title || "").trim();
+  const category = String(body.category || "").trim();
+  const amountText = String(body.amount || "").trim();
+  const frequency = String(body.frequency || "").trim();
+  const startDate = parseDate(String(body.start_date || "").trim());
+  const endDate = parseDate(String(body.end_date || "").trim());
+  const notes = String(body.notes || "").trim();
+  const isActive = body.is_active ? 1 : 0;
+
+  const validFrequencies = ["daily", "weekly", "monthly", "yearly"];
+  
+  if (!title || !category || !amountText || !frequency || !startDate) {
+    return { error: "Title, category, amount, frequency, and start date are required." };
+  }
+
+  if (!CATEGORIES.includes(category)) {
+    return { error: "Please choose a valid category." };
+  }
+
+  if (!validFrequencies.includes(frequency)) {
+    return { error: "Please choose a valid frequency." };
+  }
+
+  if (endDate && endDate < startDate) {
+    return { error: "End date must be after start date." };
+  }
+
+  const amount = Number.parseFloat(amountText);
+  if (!Number.isFinite(amount)) {
+    return { error: "Amount must be a valid number." };
+  }
+
+  if (amount <= 0) {
+    return { error: "Amount must be greater than zero." };
+  }
+
+  return {
+    payload: {
+      title,
+      category,
+      amount: Number(amount.toFixed(2)),
+      frequency,
+      start_date: startDate,
+      end_date: endDate,
+      notes,
+      is_active: isActive,
     },
   };
 }
@@ -1087,6 +1148,142 @@ app.get("/profile", requireAuth, (req, res) => {
     monthlyBudget: budget ? Number(budget.monthly_budget || 0) : 0,
     monthlySpend: Number(monthlyTotal.monthly_total || 0),
   });
+});
+
+app.get("/analytics", requireAuth, (req, res) => {
+  const spendingTrends = getSpendingTrends(req.user.id);
+  const categoryBreakdown = getCategoryBreakdown(req.user.id);
+  const dailyPattern = getDailySpendingPattern(req.user.id);
+  const monthlyComparison = getMonthlyComparison(req.user.id);
+  
+  return render(res, "analytics", {
+    title: "Analytics - Spendly",
+    spendingTrends,
+    categoryBreakdown,
+    dailyPattern,
+    monthlyComparison,
+  });
+});
+
+app.get("/recurring", requireAuth, (req, res) => {
+  const recurringExpenses = getRecurringExpensesForUser(req.user.id);
+  return render(res, "recurring-expenses", {
+    title: "Recurring Expenses - Spendly",
+    recurringExpenses,
+  });
+});
+
+app.route("/recurring/add")
+  .get(requireAuth, (req, res) => {
+    return render(res, "recurring-form", {
+      title: "Add Recurring Expense - Spendly",
+      formMode: "add",
+      recurringExpense: {
+        title: "",
+        category: "",
+        amount: "",
+        frequency: "monthly",
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: "",
+        notes: "",
+        is_active: 1,
+      },
+    });
+  })
+  .post(requireAuth, (req, res) => {
+    const { error, payload } = parseRecurringForm(req.body);
+    if (error) {
+      addFlash(req, "error", error);
+      return render(res, "recurring-form", {
+        title: "Add Recurring Expense - Spendly",
+        formMode: "add",
+        recurringExpense: payload,
+      });
+    }
+
+    createRecurringExpense(
+      req.user.id,
+      payload.title,
+      payload.category,
+      payload.amount,
+      payload.frequency,
+      payload.start_date,
+      payload.end_date || null,
+      payload.notes
+    );
+
+    addFlash(req, "success", "Recurring expense created successfully!");
+    return res.redirect("/recurring");
+  });
+
+app.route("/recurring/:id/edit")
+  .get(requireAuth, (req, res) => {
+    const recurringExpense = getRecurringExpenseById(Number(req.params.id), req.user.id);
+    if (!recurringExpense) {
+      addFlash(req, "error", "Recurring expense not found.");
+      return res.redirect("/recurring");
+    }
+
+    return render(res, "recurring-form", {
+      title: "Edit Recurring Expense - Spendly",
+      formMode: "edit",
+      recurringExpense: {
+        ...recurringExpense,
+        is_active: Number(recurringExpense.is_active),
+      },
+    });
+  })
+  .post(requireAuth, (req, res) => {
+    const { error, payload } = parseRecurringForm(req.body);
+    if (error) {
+      addFlash(req, "error", error);
+      return render(res, "recurring-form", {
+        title: "Edit Recurring Expense - Spendly",
+        formMode: "edit",
+        recurringExpense: payload,
+      });
+    }
+
+    const updated = updateRecurringExpense(
+      Number(req.params.id),
+      req.user.id,
+      payload.title,
+      payload.category,
+      payload.amount,
+      payload.frequency,
+      payload.start_date,
+      payload.end_date || null,
+      payload.notes,
+      payload.is_active
+    );
+
+    if (updated.changes === 0) {
+      addFlash(req, "error", "Recurring expense not found or not updated.");
+      return res.redirect("/recurring");
+    }
+
+    addFlash(req, "success", "Recurring expense updated successfully!");
+    return res.redirect("/recurring");
+  });
+
+app.post("/recurring/:id/delete", requireAuth, (req, res) => {
+  const deleted = deleteRecurringExpense(Number(req.params.id), req.user.id);
+  if (deleted.changes === 0) {
+    addFlash(req, "error", "Recurring expense not found.");
+  } else {
+    addFlash(req, "success", "Recurring expense deleted successfully!");
+  }
+  return res.redirect("/recurring");
+});
+
+app.post("/recurring/generate", requireAuth, (req, res) => {
+  const generatedExpenses = generateRecurringExpenses();
+  if (generatedExpenses.length > 0) {
+    addFlash(req, "success", `Generated ${generatedExpenses.length} recurring expense(s) successfully!`);
+  } else {
+    addFlash(req, "info", "No recurring expenses to generate at this time.");
+  }
+  return res.redirect("/recurring");
 });
 
 app.route("/expenses/add")
