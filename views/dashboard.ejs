@@ -77,6 +77,8 @@
   </div>
   
   <div class="relative z-10">
+    <!-- Main Container -->
+    <div class="p-6 max-w-7xl mx-auto">
     <!-- Navbar -->
     <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,7 +168,7 @@
         </div>
       </aside>
     <!-- Main Content Area -->
-      <main class="flex-1 p-8">
+      <main class="flex-1">
         <!-- TOP SECTION (WELCOME + SUMMARY) -->
         <header class="mb-8">
           <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl p-8 shadow-xl">
@@ -184,67 +186,27 @@
           <!-- SUMMARY CARDS -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
             <!-- Team Members Card -->
-            <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-green-500 hover:shadow-xl transition-shadow duration-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="flex items-center mb-2">
-                    <i class="fas fa-users text-green-500 text-2xl mr-3"></i>
-                    <span class="text-gray-600 text-sm">Team Members</span>
-                  </div>
-                  <div class="text-3xl font-bold text-gray-800">12</div>
-                </div>
-                <div class="text-green-500">
-                  <i class="fas fa-arrow-up"></i>
-                </div>
-              </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-green-500 hover:shadow-xl transition-all duration-300">
+              <h3 class="text-gray-500 text-sm mb-2">Team Members</h3>
+              <p class="text-2xl font-bold">12</p>
             </div>
             
             <!-- Today's Spend Card -->
-            <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-blue-500 hover:shadow-xl transition-shadow duration-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="flex items-center mb-2">
-                    <i class="fas fa-wallet text-blue-500 text-2xl mr-3"></i>
-                    <span class="text-gray-600 text-sm">Today's Spend</span>
-                  </div>
-                  <div class="text-3xl font-bold text-gray-800">₹0</div>
-                </div>
-                <div class="text-blue-500">
-                  <i class="fas fa-minus"></i>
-                </div>
-              </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-blue-500 hover:shadow-xl transition-all duration-300">
+              <h3 class="text-gray-500 text-sm mb-2">Today's Spend</h3>
+              <p class="text-2xl font-bold">₹0</p>
             </div>
             
             <!-- Daily Average Card -->
-            <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-yellow-500 hover:shadow-xl transition-shadow duration-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="flex items-center mb-2">
-                    <i class="fas fa-chart-line text-yellow-500 text-2xl mr-3"></i>
-                    <span class="text-gray-600 text-sm">Daily Average</span>
-                  </div>
-                  <div class="text-3xl font-bold text-gray-800">₹0</div>
-                </div>
-                <div class="text-yellow-500">
-                  <i class="fas fa-minus"></i>
-                </div>
-              </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-yellow-500 hover:shadow-xl transition-all duration-300">
+              <h3 class="text-gray-500 text-sm mb-2">Daily Average</h3>
+              <p class="text-2xl font-bold">₹0</p>
             </div>
             
             <!-- Health Score Card -->
-            <div class="bg-white rounded-xl p-6 shadow-lg border-l-4 border-red-500 hover:shadow-xl transition-shadow duration-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="flex items-center mb-2">
-                    <i class="fas fa-heartbeat text-red-500 text-2xl mr-3"></i>
-                    <span class="text-gray-600 text-sm">Health Score</span>
-                  </div>
-                  <div class="text-3xl font-bold text-gray-800">69/100</div>
-                </div>
-                <div class="text-red-500">
-                  <i class="fas fa-arrow-down"></i>
-                </div>
-              </div>
+            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-red-500 hover:shadow-xl transition-all duration-300">
+              <h3 class="text-gray-500 text-sm mb-2">Health Score</h3>
+              <p class="text-2xl font-bold">69/100</p>
             </div>
           </div>
         </header>
@@ -990,7 +952,151 @@
       </button>
     </div>
   </div>
-</div>
+<!-- QUICK ACTIONS PANEL -->
+        <section class="mt-6">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="font-semibold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-bolt text-indigo-600"></i>
+                Quick Actions
+              </h2>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- Add Expense Card -->
+              <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center transition-all duration-300 cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 hover:-translate-y-1 hover:shadow-lg">
+                <div class="text-3xl mb-4">➕</div>
+                <div class="text-lg font-bold text-gray-800 mb-2">Add Expense</div>
+                <div class="text-gray-600 text-sm">Quickly log a new team expense</div>
+              </div>
+              
+              <!-- Setup Recurring Card -->
+              <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center transition-all duration-300 cursor-pointer hover:border-blue-500 hover:bg-blue-50 hover:-translate-y-1 hover:shadow-lg">
+                <div class="text-3xl mb-4">🔄</div>
+                <div class="text-lg font-bold text-gray-800 mb-2">Setup Recurring</div>
+                <div class="text-gray-600 text-sm">Create automatic recurring expenses</div>
+              </div>
+              
+              <!-- View Analytics Card -->
+              <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center transition-all duration-300 cursor-pointer hover:border-orange-500 hover:bg-orange-50 hover:-translate-y-1 hover:shadow-lg">
+                <div class="text-3xl mb-4">📊</div>
+                <div class="text-lg font-bold text-gray-800 mb-2">View Analytics</div>
+                <div class="text-gray-600 text-sm">Deep dive into spending patterns</div>
+              </div>
+              
+              <!-- Invite Member Card -->
+              <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center transition-all duration-300 cursor-pointer hover:border-purple-500 hover:bg-purple-50 hover:-translate-y-1 hover:shadow-lg">
+                <div class="text-3xl mb-4">👤</div>
+                <div class="text-lg font-bold text-gray-800 mb-2">Invite Member</div>
+                <div class="text-gray-600 text-sm">Add new team members</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECENT EXPENSES TABLE -->
+        <section class="mt-6">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="font-semibold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-receipt text-indigo-600"></i>
+                Recent Expenses
+              </h2>
+              <div class="flex items-center gap-2">
+                <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="all">All Categories</option>
+                  <option value="food">Food</option>
+                  <option value="travel">Travel</option>
+                  <option value="software">Software</option>
+                  <option value="supplies">Supplies</option>
+                </select>
+                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-300 text-sm font-medium">
+                  View All
+                </button>
+              </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <!-- Expense 1 -->
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center mr-3">
+                          <i class="fas fa-utensils text-orange-600 text-sm"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">Team Lunch</div>
+                          <div class="text-gray-500 text-xs">Team lunch at Downtown Restaurant</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">₹1,200</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Food</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs mr-2">JD</div>
+                        <div class="text-sm text-gray-900">John Doe</div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Today, 1:30 PM</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">View</button>
+                    </td>
+                  </tr>
+                  
+                  <!-- Expense 2 -->
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                          <i class="fas fa-laptop-code text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">Software License</div>
+                          <div class="text-gray-500 text-xs">Annual subscription for development tools</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">₹5,000</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Software</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold text-xs mr-2">AS</div>
+                        <div class="text-sm text-gray-900">Alice Smith</div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Today, 10:15 AM</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">View</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
