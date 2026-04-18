@@ -1,0 +1,32 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "chat", crmTitle: "Team Chat", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Team</p>
+        <h1 class="dashboard-title">Chat</h1>
+        <p class="dashboard-subtitle">A lightweight team discussion view for shared expense coordination and follow-up.</p>
+      </div>
+      <a href="/groups" class="btn-ghost">Open groups</a>
+    </div>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Conversation</h2>
+        <span class="card-note">Shared expense discussion</span>
+      </div>
+      <div class="insight-list">
+        <% messages.forEach((message) => { %>
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label"><%= message.channel %> · <%= message.time %></span>
+            <strong><%= message.author %></strong>
+            <p><%= message.text %></p>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

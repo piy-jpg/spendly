@@ -1,0 +1,37 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "forecast", crmTitle: "Forecast", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Smart</p>
+        <h1 class="dashboard-title">Forecast</h1>
+        <p class="dashboard-subtitle">Predict where your spending is heading and see how long your current pace can hold.</p>
+      </div>
+      <a href="/analytics" class="btn-ghost">Open analytics</a>
+    </div>
+
+    <section class="stats-grid">
+      <% forecastCards.forEach((card) => { %>
+        <article class="stat-panel">
+          <span class="stat-label"><%= card.label %></span>
+          <strong class="stat-value stat-value--small"><%= card.label === "Runway days" ? card.value : `₹${Number(card.value).toFixed(2)}` %></strong>
+          <span class="stat-meta"><%= card.detail %></span>
+        </article>
+      <% }) %>
+    </section>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Forecast context</h2>
+        <span class="card-note">Projection logic</span>
+      </div>
+      <div class="mini-metrics">
+        <div class="mini-metric"><span>Projected total is calculated from current daily rate and remaining days in the month.</span></div>
+        <div class="mini-metric"><span>Runway shows how long your remaining budget lasts at today’s pace.</span></div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

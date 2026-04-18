@@ -1,4 +1,4 @@
-<%- include("partials/header", { title, currentUser, flashes, extraCss: `
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "budgets", crmTitle: formMode === "add" ? "Add Recurring Expense" : "Edit Recurring Expense", crmSearchAction: "/dashboard" }) %>
 <style>
   .recurring-form-container {
     max-width: 600px;
@@ -122,7 +122,6 @@
     }
   }
 </style>
-` }) %>
 
 <div class="recurring-form-container">
   <div class="form-header">
@@ -253,4 +252,4 @@
   </form>
 </div>
 
-<%- include("partials/footer") %>
+<%- include("partials/crm-shell-end") %>

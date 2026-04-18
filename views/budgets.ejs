@@ -1,0 +1,143 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "budgets", crmTitle: "Budgets", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Budget planning</p>
+        <h1 class="dashboard-title">Budgets</h1>
+        <p class="dashboard-subtitle">Set your monthly budget, monitor pacing, and keep your savings target visible.</p>
+      </div>
+      <a href="/insights" class="btn-ghost">Open insights</a>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel stat-panel--highlight">
+        <span class="stat-label">Current budget</span>
+        <strong class="stat-value stat-value--small"><%= monthlyBudget ? `₹${monthlyBudget.toFixed(2)}` : "Not set" %></strong>
+        <span class="stat-meta">Monthly limit for this account</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Month spent</span>
+        <strong class="stat-value stat-value--small">₹<%= monthlySpend.toFixed(2) %></strong>
+        <span class="stat-meta"><%= monthlyBudget ? `${budgetUsedPct}% of budget used` : "Set a budget to track usage" %></span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Remaining</span>
+        <strong class="stat-value stat-value--small"><%= monthlyBudget ? `₹${remainingBudget.toFixed(2)}` : "N/A" %></strong>
+        <span class="stat-meta">Available before month end</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Projected total</span>
+        <strong class="stat-value stat-value--small">₹<%= velocity.projectedTotal.toFixed(2) %></strong>
+        <span class="stat-meta">Based on current daily pace</span>
+      </article>
+    </section>
+
+    <% if (budgetAlert) { %>
+      <section class="budget-alert budget-alert--<%= budgetAlert.tier %>">
+        <div>
+          <p class="budget-alert-label"><%= budgetAlert.label %></p>
+          <p class="budget-alert-copy"><%= budgetAlert.message %></p>
+        </div>
+        <strong class="budget-alert-stat"><%= monthlyBudget ? `${budgetUsedPct}% used` : "Waiting for budget" %></strong>
+      </section>
+    <% } %>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Update monthly budget</h2>
+          <span class="card-note">Changes apply immediately</span>
+        </div>
+
+        <form method="POST" action="/budget" class="budget-form">
+          <div class="budget-input-row">
+            <input type="number" step="0.01" min="0" name="monthly_budget" class="form-input" value="<%= monthlyBudget || '' %>" placeholder="Enter monthly budget">
+            <button type="submit" class="btn-primary">Save budget</button>
+          </div>
+        </form>
+
+        <div class="budget-meter-track">
+          <div class="budget-meter-fill <%= monthlyBudget && budgetUsedPct > 100 ? 'budget-meter-fill--over' : '' %>" style="width:<%= monthlyBudget ? Math.min(budgetUsedPct, 100) : 0 %>%;"></div>
+        </div>
+
+        <div class="budget-meta">
+          <span>Spent: ₹<%= monthlySpend.toFixed(2) %></span>
+          <span><%= monthlyBudget ? `Left: ₹${remainingBudget.toFixed(2)}` : "No budget set" %></span>
+        </div>
+
+        <div class="budget-thresholds">
+          <span class="<%= budgetUsedPct >= 50 ? 'budget-threshold--active' : '' %>">50%</span>
+          <span class="<%= budgetUsedPct >= 80 ? 'budget-threshold--active' : '' %>">80%</span>
+          <span class="<%= budgetUsedPct >= 100 ? 'budget-threshold--active' : '' %>">100%</span>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Budget health</h2>
+          <span class="card-note"><%= healthScore %>/100</span>
+        </div>
+
+        <div class="score-breakdown">
+          <% healthBreakdown.items.forEach((item) => { %>
+            <div>
+              <div class="score-row-top">
+                <span><%= item.label %></span>
+                <strong><%= item.value %>/100</strong>
+              </div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" style="width:<%= item.value %>%;"></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Savings target</h2>
+          <span class="card-note">Reserved from remaining budget</span>
+        </div>
+
+        <div class="goal-card">
+          <div class="goal-amounts">
+            <div>
+              <span class="stat-label">Saved</span>
+              <strong>₹<%= savingsGoal.saved.toFixed(0) %></strong>
+            </div>
+            <div>
+              <span class="stat-label">Target</span>
+              <strong>₹<%= savingsGoal.target.toFixed(0) %></strong>
+            </div>
+          </div>
+          <div class="progress-track progress-track--goal">
+            <div class="progress-fill progress-fill--goal" style="width:<%= savingsGoal.percent %>%;"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Recommendations</h2>
+          <span class="card-note">Based on current pace</span>
+        </div>
+
+        <% if (advisorMessages.length) { %>
+          <div class="mini-metrics">
+            <% advisorMessages.forEach((message) => { %>
+              <div class="mini-metric"><span><%= message %></span></div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="empty-copy">Add more expense history to unlock budget recommendations.</p>
+        <% } %>
+      </article>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

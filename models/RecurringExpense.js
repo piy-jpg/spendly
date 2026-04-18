@@ -1,8 +1,8 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require("crypto");
 
 class RecurringExpense {
   constructor(recurringData = {}) {
-    this._id = recurringData._id || uuidv4();
+    this._id = recurringData._id || randomUUID();
     this.teamId = recurringData.teamId || '';
     this.title = recurringData.title || '';
     this.amount = recurringData.amount || 0;

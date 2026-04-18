@@ -1,8 +1,8 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require("crypto");
 
 class Team {
   constructor(teamData = {}) {
-    this._id = teamData._id || uuidv4();
+    this._id = teamData._id || randomUUID();
     this.name = teamData.name || '';
     this.createdBy = teamData.createdBy || null;
     this.budget = teamData.budget || 0;

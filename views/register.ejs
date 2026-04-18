@@ -1,13 +1,30 @@
 <%- include("partials/header", { title, currentUser, flashes, extraCss: null }) %>
 
-<section class="auth-section">
-  <div class="auth-container">
-    <div class="auth-header">
-      <h1 class="auth-title">Create your account</h1>
-      <p class="auth-subtitle">Start tracking your expenses today</p>
+<section class="auth-workspace">
+  <aside class="auth-panel">
+    <div>
+      <div class="auth-brand">
+        <span class="auth-brand-icon">◈</span>
+        <span>SPENDLY</span>
+      </div>
+      <h1>Create your finance workspace.</h1>
+      <p>Set up your account and start using the dashboard-style experience for expenses, analytics, goals, insights, and team collaboration.</p>
     </div>
 
+    <div class="auth-points">
+      <div class="auth-point">Track expenses, transactions, budgets, analytics, and savings goals.</div>
+      <div class="auth-point">Use smart pages like Insights, Recommendations, and Forecast.</div>
+      <div class="auth-point">Organize work across people, groups, reports, notifications, and help.</div>
+    </div>
+  </aside>
+
+  <div class="auth-main">
     <div class="auth-card">
+      <div class="auth-form-head">
+        <h2>Create account</h2>
+        <p>Start tracking your money inside the full Spendly workspace.</p>
+      </div>
+
       <form method="POST" action="/register">
         <div class="form-group">
           <label for="name">Full name</label>
@@ -27,12 +44,12 @@
         </div>
         <button type="submit" class="btn-submit">Create account</button>
       </form>
-    </div>
 
-    <p class="auth-switch">
-      Already have an account?
-      <a href="/login">Sign in</a>
-    </p>
+      <p class="auth-switch">
+        Already have an account?
+        <a href="/login">Sign in</a>
+      </p>
+    </div>
   </div>
 </section>
 

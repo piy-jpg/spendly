@@ -1,0 +1,149 @@
+<%
+  const exportParams = new URLSearchParams();
+  if (filters.q) exportParams.set("q", filters.q);
+  filters.categories.forEach((category) => exportParams.append("categories", category));
+  if (filters.startDate) exportParams.set("start_date", filters.startDate);
+  if (filters.endDate) exportParams.set("end_date", filters.endDate);
+  if (filters.minAmount !== "") exportParams.set("min_amount", filters.minAmount);
+  if (filters.maxAmount !== "") exportParams.set("max_amount", filters.maxAmount);
+%>
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "expenses", crmTitle: "Expenses", crmSearchAction: "/expenses" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Expense center</p>
+        <h1 class="dashboard-title">All expenses</h1>
+        <p class="dashboard-subtitle">Search, filter, export, and manage every expense from one structured page.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/expenses/add" class="btn-primary">Add expense</a>
+        <a href="/expenses/export?<%= exportParams.toString() %>" class="btn-ghost">Export CSV</a>
+      </div>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel">
+        <span class="stat-label">Visible expenses</span>
+        <strong class="stat-value"><%= expenses.length %></strong>
+        <span class="stat-meta">Rows matching the current filters</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Filtered total</span>
+        <strong class="stat-value stat-value--small">₹<%= totalAmount.toFixed(2) %></strong>
+        <span class="stat-meta">Combined value of visible entries</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Average amount</span>
+        <strong class="stat-value stat-value--small">₹<%= averageAmount.toFixed(2) %></strong>
+        <span class="stat-meta">Average per matching expense</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Top category</span>
+        <strong class="stat-value stat-value--small"><%= categoryRows[0] ? categoryRows[0].category : "None yet" %></strong>
+        <span class="stat-meta"><%= categoryRows[0] ? `${categoryRows[0].percentage}% of visible spend` : "Add a few records to see trends" %></span>
+      </article>
+    </section>
+
+    <section class="filter-card">
+      <div class="card-head">
+        <h2>Filter expenses</h2>
+        <span class="card-note">Use natural search or precise controls</span>
+      </div>
+
+      <form method="GET" action="/expenses">
+        <div class="filter-grid filter-grid--advanced">
+          <div class="form-group">
+            <label for="q">Search</label>
+            <input type="text" id="q" name="q" class="form-input" value="<%= filters.q %>" placeholder="food, swiggy, >500, last week">
+          </div>
+          <div class="form-group">
+            <label>Categories</label>
+            <div class="filter-chip-list">
+              <% categories.forEach((category) => { %>
+                <label class="filter-chip <%= filters.categories.includes(category) ? 'filter-chip--active' : '' %>">
+                  <input type="checkbox" name="categories" value="<%= category %>" <%= filters.categories.includes(category) ? "checked" : "" %>>
+                  <span><%= category %></span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="start_date">Start</label>
+            <input type="date" id="start_date" name="start_date" class="form-input" value="<%= filters.startDate %>">
+          </div>
+          <div class="form-group">
+            <label for="end_date">End</label>
+            <input type="date" id="end_date" name="end_date" class="form-input" value="<%= filters.endDate %>">
+          </div>
+          <div class="form-group">
+            <label for="min_amount">Min amount</label>
+            <input type="number" step="0.01" min="0" id="min_amount" name="min_amount" class="form-input" value="<%= filters.minAmount %>">
+          </div>
+          <div class="form-group">
+            <label for="max_amount">Max amount</label>
+            <input type="number" step="0.01" min="0" id="max_amount" name="max_amount" class="form-input" value="<%= filters.maxAmount %>">
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <% if (hasActiveFilters) { %>
+            <a href="/expenses" class="btn-ghost">Clear filters</a>
+          <% } %>
+          <button type="submit" class="btn-primary">Apply filters</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Expense list</h2>
+        <span class="card-note"><%= summary.total_count || 0 %> result<%= (summary.total_count || 0) === 1 ? "" : "s" %></span>
+      </div>
+
+      <% if (expenses.length) { %>
+        <div class="table-wrap">
+          <table class="expense-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% expenses.forEach((expense) => { %>
+                <tr>
+                  <td>
+                    <div class="expense-title"><%= expense.title %></div>
+                    <% if (expense.notes) { %>
+                      <div class="expense-notes"><%= expense.notes %></div>
+                    <% } %>
+                  </td>
+                  <td><%= expense.category %></td>
+                  <td>₹<%= Number(expense.amount).toFixed(2) %></td>
+                  <td><%= expense.expense_date %></td>
+                  <td class="expense-actions">
+                    <a href="/expenses/<%= expense.id %>/edit">Edit</a>
+                    <a href="/expenses/<%= expense.id %>/delete" class="link-danger">Delete</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <h3>No expenses found</h3>
+          <p>Try broadening the filters or add a new expense to start building your records.</p>
+          <a href="/expenses/add" class="btn-primary">Add expense</a>
+        </div>
+      <% } %>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

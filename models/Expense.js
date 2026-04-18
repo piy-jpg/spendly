@@ -1,8 +1,8 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require("crypto");
 
 class Expense {
   constructor(expenseData = {}) {
-    this._id = expenseData._id || uuidv4();
+    this._id = expenseData._id || randomUUID();
     this.teamId = expenseData.teamId || '';
     this.amount = expenseData.amount || 0;
     this.category = expenseData.category || 'Other';

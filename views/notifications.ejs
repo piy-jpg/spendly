@@ -1,0 +1,55 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "notifications", crmTitle: "Notifications", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">System</p>
+        <h1 class="dashboard-title">Notifications</h1>
+        <p class="dashboard-subtitle">Alerts, budget warnings, and suggested actions collected into one operational inbox.</p>
+      </div>
+      <a href="/insights" class="btn-ghost">Open insights</a>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel">
+        <span class="stat-label">Notifications</span>
+        <strong class="stat-value"><%= notifications.length %></strong>
+        <span class="stat-meta">Current actionable items</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Latest status</span>
+        <strong class="stat-value stat-value--small"><%= notifications[0] ? notifications[0].title : "Clear" %></strong>
+        <span class="stat-meta">Top priority card</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Today’s spend</span>
+        <strong class="stat-value stat-value--small">₹<%= todayStats.todaySpend.toFixed(2) %></strong>
+        <span class="stat-meta">Affects current alert state</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Budget used</span>
+        <strong class="stat-value stat-value--small"><%= budgetUsedPct %>%</strong>
+        <span class="stat-meta">Driver of finance notifications</span>
+      </article>
+    </section>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Notification feed</h2>
+        <span class="card-note">System-generated updates</span>
+      </div>
+
+      <div class="alert-list">
+        <% notifications.forEach((notification) => { %>
+          <div class="alert-item">
+            <strong><%= notification.title %></strong>
+            <p><%= notification.body %></p>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

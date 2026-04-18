@@ -1,4 +1,4 @@
-<%- include("partials/header", { title, currentUser, flashes, extraCss: `
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "budgets", crmTitle: "Recurring Expenses", crmSearchAction: "/dashboard" }) %>
 <style>
   .recurring-container {
     max-width: 1000px;
@@ -111,7 +111,6 @@
     color: #374151;
   }
 </style>
-` }) %>
 
 <div class="recurring-container">
   <div class="recurring-header">
@@ -190,4 +189,4 @@
   <% } %>
 </div>
 
-<%- include("partials/footer") %>
+<%- include("partials/crm-shell-end") %>

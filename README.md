@@ -1,145 +1,68 @@
-# 🚀 Spendly - Team Expense Management System
+# Spendly
 
-A comprehensive team expense management platform with real-time collaboration, role-based permissions, and beautiful modern UI.
+Spendly is an expense-tracking web app built as a server-rendered Node.js application. The active app path in this repository is `server.js` + `views/*.ejs` + `lib/db.js`.
 
-## ✨ Features
+## What actually runs
 
-### 🏗️ Core Architecture
-- **User → Team → Expenses → Activities → Roles**
-- Clean separation of concerns with MVC pattern
-- Role-based access control (Admin, Team Lead, Member)
-- Real-time activity logging and notifications
+- Backend: Express
+- Frontend: EJS templates, static CSS, vanilla JS, Chart.js
+- Database: SQLite via `better-sqlite3`
+- Auth: cookie-backed session store persisted to `spendly-sessions.json`
 
-### 🎯 Key Features
-- **Team Management**: Create teams, invite members, manage roles
-- **Expense Tracking**: Full CRUD operations with categories and analytics
-- **Budget Monitoring**: Real-time budget tracking with health scoring
-- **Activity Timeline**: Rich activity feed with metadata and filtering
-- **Recurring Expenses**: Automated expense generation with flexible frequencies
-- **Analytics Dashboard**: Comprehensive spending patterns and insights
-- **Modern UI**: Glass morphism design with animations and micro-interactions
+There are some older Python/Flask and experimental files in the repo, but they are not the current runtime path for the app.
 
-### 🔐 Security & Permissions
-- **Admin**: Full control over all features
-- **Team Lead**: Manage members, expenses, and budget
-- **Member**: Add/view own expenses and analytics
+## Project structure
 
-## 🛠️ Tech Stack
-
-### Backend
-- **Node.js** with Express.js
-- **SQLite** with better-sqlite3
-- **Session-based Authentication**
-- **RESTful API** with comprehensive endpoints
-
-### Frontend
-- **React** with modern hooks
-- **Tailwind CSS** for responsive design
-- **Glass Morphism** UI with animations
-- **Chart.js** for data visualization
-
-### Database
-- **Normalized Schema** with proper relationships
-- **Indexes** for performance optimization
-- **Foreign Keys** for data integrity
-
-## 📁 Project Structure
-
-```
-spendly/
-├── database/
-│   └── schema.sql              # Database schema and structure
-├── models/                     # Data models and business logic
-│   ├── User.js                # User model with permissions
-│   ├── Team.js                # Team model with health scoring
-│   ├── Expense.js             # Expense model with validation
-│   ├── Activity.js            # Activity logging model
-│   └── RecurringExpense.js   # Recurring expense automation
-├── controllers/                 # API controllers
-│   ├── authController.js       # Authentication logic
-│   ├── teamController.js       # Team management
-│   ├── expenseController.js    # Expense operations
-│   └── activityController.js  # Activity feed management
-├── routes/                     # API routes
-│   └── index.js              # Main router with all endpoints
-├── components/                  # React components
-│   ├── TeamCard.jsx           # Team member management
-│   ├── ActivityFeed.jsx       # Real-time activity feed
-│   ├── ExpenseList.jsx        # Expense listing and filtering
-│   └── QuickActions.jsx       # Quick action buttons
-├── views/                       # EJS templates
-│   ├── dashboard.ejs          # Main team dashboard
-│   ├── analytics.ejs          # Analytics and charts
-│   ├── recurring-form.ejs      # Recurring expense setup
-│   └── partials/              # Reusable components
-└── server.js                    # Main server file
+```text
+.
+├── server.js                # Main app entrypoint
+├── lib/db.js                # SQLite schema + queries used by the live app
+├── views/                   # EJS pages and partials
+├── static/                  # Main frontend assets
+├── public/                  # Additional CSS/JS assets
+├── spendly.db               # SQLite database
+└── spendly-sessions.json    # Simple persisted session store
 ```
 
-## 🚀 Getting Started
+## Run locally
 
-### Prerequisites
-- Node.js 16+
-- npm or yarn
-- Git
+1. Install dependencies:
 
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/piy-jpg/spendly.git
-cd spendly
-```
-
-2. **Install dependencies**
 ```bash
 npm install
 ```
 
-3. **Set up database**
-```bash
-# Run database schema
-sqlite3 spendly.db < database/schema.sql
-```
+2. Start the app:
 
-4. **Start the server**
 ```bash
 npm start
 ```
 
-5. **Access the application**
+3. Open:
+
+```text
+http://127.0.0.1:5002
 ```
-http://localhost:5001
+
+## Health check
+
+After starting the server, you can verify it with:
+
+```bash
+curl http://127.0.0.1:5002/health
 ```
 
-## 📊 API Endpoints
+## Main routes
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/me` - Get current user
-
-### Team Management
-- `POST /api/team/create` - Create new team
-- `GET /api/team/:id` - Get team details
-- `POST /api/team/:id/invite` - Invite team member
-- `PUT /api/team/:id/budget` - Update team budget
-- `DELETE /api/team/:id/members/:memberId` - Remove team member
-- `GET /api/team/:id/stats` - Get team statistics
-
-### Expense Management
-- `POST /api/expenses/add` - Add new expense
-- `GET /api/expenses/team/:teamId` - Get team expenses
-- `PUT /api/expenses/:expenseId` - Update expense
-- `DELETE /api/expenses/:expenseId` - Delete expense
-- `GET /api/expenses/:expenseId` - Get expense by ID
-- `GET /api/expenses/team/:teamId/analytics` - Get expense analytics
-
-### Activity Feed
-- `GET /api/activity/:teamId` - Get team activities
-- `GET /api/activity/:teamId/type/:type` - Get activities by type
-- `POST /api/activity/create` - Create custom activity
-- `GET /api/activity/:teamId/feed` - Get activity feed
+- `/` landing page
+- `/register` create account
+- `/login` sign in
+- `/dashboard` main workspace
+- `/expenses` expense management
+- `/analytics` charts and trends
+- `/budgets` budget overview
+- `/recurring` recurring expenses
+- `/profile`, `/settings`, `/notifications`
 
 ## 🎨 UI Components
 
@@ -160,7 +83,7 @@ http://localhost:5001
 ### Environment Variables
 ```env
 NODE_ENV=development
-PORT=5001
+PORT=5002
 SESSION_SECRET=your-secret-key
 DB_PATH=./spendly.db
 ```
@@ -243,7 +166,7 @@ Activities include rich metadata for:
 ### Docker Support
 ```bash
 docker build -t spendly .
-docker run -p 5001:5001 spendly
+docker run -p 5002:5002 spendly
 ```
 
 ## 🤝 Contributing

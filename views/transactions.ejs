@@ -1,0 +1,86 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "transactions", crmTitle: "Transactions", crmSearchAction: "/expenses" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Finance</p>
+        <h1 class="dashboard-title">Transactions</h1>
+        <p class="dashboard-subtitle">A ledger-style view of every logged spend with status, reference, and source.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/expenses/add" class="btn-primary">Add transaction</a>
+        <a href="/expenses/export" class="btn-ghost">Export CSV</a>
+      </div>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel">
+        <span class="stat-label">Transactions</span>
+        <strong class="stat-value"><%= transactions.length %></strong>
+        <span class="stat-meta">Visible rows in the ledger</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Total settled</span>
+        <strong class="stat-value stat-value--small">₹<%= totalAmount.toFixed(2) %></strong>
+        <span class="stat-meta">Sum of visible transactions</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Average ticket</span>
+        <strong class="stat-value stat-value--small">₹<%= averageAmount.toFixed(2) %></strong>
+        <span class="stat-meta">Average transaction value</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Largest transaction</span>
+        <strong class="stat-value stat-value--small">₹<%= maxAmount.toFixed(2) %></strong>
+        <span class="stat-meta">Highest single entry</span>
+      </article>
+    </section>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Transaction ledger</h2>
+        <span class="card-note">Status-aware record list</span>
+      </div>
+
+      <% if (transactions.length) { %>
+        <div class="table-wrap">
+          <table class="expense-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% transactions.forEach((transaction) => { %>
+                <tr>
+                  <td><strong><%= transaction.reference %></strong></td>
+                  <td>
+                    <div class="expense-title"><%= transaction.title %></div>
+                    <div class="expense-notes"><%= transaction.category %></div>
+                  </td>
+                  <td><%= transaction.status %></td>
+                  <td><%= transaction.source %></td>
+                  <td>₹<%= Number(transaction.amount).toFixed(2) %></td>
+                  <td><%= transaction.expense_date %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <h3>No transactions yet</h3>
+          <p>Add your first expense and it will appear here as a tracked transaction.</p>
+        </div>
+      <% } %>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

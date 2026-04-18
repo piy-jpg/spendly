@@ -12,12 +12,22 @@
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/animations.css">
   <link rel="stylesheet" href="/css/modern-effects.css">
+  <link rel="stylesheet" href="/css/slidebar.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="/js/dark-mode.js"></script>
-  <% if (extraCss) { %><link rel="stylesheet" href="<%= extraCss %>"><% } %>
+  <script src="/js/slidebar.js"></script>
+  <% const resolvedExtraCss = typeof extraCss !== "undefined" ? extraCss : null; %>
+  <% if (resolvedExtraCss && !String(resolvedExtraCss).includes("<")) { %><link rel="stylesheet" href="<%= resolvedExtraCss %>"><% } %>
+  <% if (resolvedExtraCss && String(resolvedExtraCss).includes("<")) { %><%- resolvedExtraCss %><% } %>
 </head>
-<body>
+<body class="<%= typeof bodyClass !== 'undefined' && bodyClass ? bodyClass : '' %>">
   <% const navSearchValue = query && typeof query.q === "string" ? query.q : ""; %>
+  <% const navSearchAction = ["/expenses", "/transactions"].includes(path) ? "/expenses" : "/dashboard"; %>
+  <% const financePaths = ["/expenses", "/transactions", "/budgets", "/analytics"]; %>
+  <% const teamPaths = ["/people", "/groups"]; %>
+  <% const smartPaths = ["/insights"]; %>
+  <% const systemPaths = ["/notifications", "/profile", "/settings"]; %>
+  <% const profileSectionActive = ["/profile", "/settings", "/notifications"].includes(path); %>
   <nav class="navbar">
     <div class="nav-inner">
       <div class="nav-row">
@@ -46,11 +56,41 @@
           <div class="nav-left-cluster">
             <div class="nav-links">
               <a href="<%= navMeta.quickLinks.dashboard %>" class="<%= path === '/dashboard' ? 'is-active' : '' %>">Dashboard</a>
-              <a href="<%= navMeta.quickLinks.expenses %>">Expenses</a>
-              <a href="/recurring" class="<%= path === '/recurring' ? 'is-active' : '' %>">Recurring</a>
-              <a href="/analytics" class="<%= path === '/analytics' ? 'is-active' : '' %>">Analytics</a>
-              <a href="<%= navMeta.quickLinks.reports %>">Reports</a>
-              <a href="<%= navMeta.quickLinks.budget %>">Budgets</a>
+
+              <details class="nav-menu nav-role-menu">
+                <summary class="nav-menu-trigger <%= financePaths.includes(path) ? 'is-active' : '' %>">Finance</summary>
+                <div class="nav-menu-panel">
+                  <a href="<%= navMeta.quickLinks.expenses %>">Expenses</a>
+                  <a href="<%= navMeta.quickLinks.transactions %>">Transactions</a>
+                  <a href="<%= navMeta.quickLinks.budget %>">Budgets</a>
+                  <a href="<%= navMeta.quickLinks.analytics %>">Analytics</a>
+                </div>
+              </details>
+
+              <details class="nav-menu nav-role-menu">
+                <summary class="nav-menu-trigger <%= teamPaths.includes(path) ? 'is-active' : '' %>">Team</summary>
+                <div class="nav-menu-panel">
+                  <a href="<%= navMeta.quickLinks.people %>">People</a>
+                  <a href="<%= navMeta.quickLinks.groups %>">Groups</a>
+                </div>
+              </details>
+
+              <details class="nav-menu nav-role-menu">
+                <summary class="nav-menu-trigger <%= smartPaths.includes(path) ? 'is-active' : '' %>">Smart</summary>
+                <div class="nav-menu-panel">
+                  <a href="<%= navMeta.quickLinks.insights %>">Insights (AI)</a>
+                </div>
+              </details>
+
+              <details class="nav-menu nav-role-menu">
+                <summary class="nav-menu-trigger <%= systemPaths.includes(path) ? 'is-active' : '' %>">System</summary>
+                <div class="nav-menu-panel">
+                  <a href="<%= navMeta.quickLinks.notifications %>">Notifications</a>
+                  <a href="<%= navMeta.quickLinks.profile %>">Profile</a>
+                  <a href="<%= navMeta.quickLinks.settings %>">Settings</a>
+                  <a href="/logout">Logout</a>
+                </div>
+              </details>
             </div>
 
             <details class="nav-menu nav-menu--compact">
@@ -64,7 +104,7 @@
           </div>
 
           <div class="nav-center-cluster">
-            <form method="GET" action="/dashboard" class="nav-search">
+            <form method="GET" action="<%= navSearchAction %>" class="nav-search">
               <span class="nav-search-icon">⌕</span>
               <input type="text" name="q" value="<%= navSearchValue %>" placeholder="food, >500, swiggy, show last week expenses" class="nav-search-input" aria-label="Smart expense search">
               <button type="submit" class="nav-search-submit">Go</button>
@@ -109,8 +149,9 @@
                 </span>
               </summary>
               <div class="nav-menu-panel">
-                <a href="/profile">My Profile</a>
-                <a href="/profile">Settings</a>
+                <a href="<%= navMeta.quickLinks.notifications %>">Notifications</a>
+                <a href="<%= navMeta.quickLinks.profile %>">Profile</a>
+                <a href="<%= navMeta.quickLinks.settings %>">Settings</a>
                 <a href="<%= navMeta.quickLinks.export %>">Export Data</a>
                 <a href="/logout">Logout</a>
               </div>
@@ -174,9 +215,9 @@
 
     <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
       <a href="/dashboard" class="<%= path === '/dashboard' ? 'is-active' : '' %>">Home</a>
-      <button type="button" data-modal-open="add-expense-modal">Add</button>
-      <a href="/dashboard#reports">Reports</a>
-      <a href="/profile" class="<%= path === '/profile' ? 'is-active' : '' %>">Profile</a>
+      <a href="/expenses" class="<%= financePaths.includes(path) ? 'is-active' : '' %>">Finance</a>
+      <a href="/insights" class="<%= smartPaths.includes(path) ? 'is-active' : '' %>">Smart</a>
+      <a href="/profile" class="<%= profileSectionActive ? 'is-active' : '' %>">Profile</a>
     </nav>
   <% } %>
 

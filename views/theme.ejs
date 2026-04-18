@@ -1,0 +1,31 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "theme", crmTitle: "Theme Toggle", crmSearchAction: "/dashboard", crmShowAddButton: false }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">System</p>
+        <h1 class="dashboard-title">Theme Toggle</h1>
+        <p class="dashboard-subtitle">Switch between light and dark mode while keeping the CRM workspace consistent.</p>
+      </div>
+      <button type="button" class="btn-primary theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+        <span data-theme-icon>🌙</span>
+        <span class="theme-toggle-label">Toggle Theme</span>
+      </button>
+    </div>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Theme tips</h2>
+        <span class="card-note">System preference</span>
+      </div>
+      <div class="mini-metrics">
+        <% themeTips.forEach((tip) => { %>
+          <div class="mini-metric"><span><%= tip %></span></div>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

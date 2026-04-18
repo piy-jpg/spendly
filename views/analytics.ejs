@@ -1,327 +1,231 @@
-<%- include("partials/header", { title, currentUser, flashes, extraCss: `
-<style>
-  .analytics-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-  
-  .analytics-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  
-  .analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-  }
-  
-  .chart-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  .chart-card h3 {
-    margin: 0 0 1rem 0;
-    color: #333;
-    font-size: 1.25rem;
-  }
-  
-  .chart-container {
-    position: relative;
-    height: 300px;
-  }
-  
-  .insights-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-  
-  .insights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-  
-  .insight-item {
-    text-align: center;
-  }
-  
-  .insight-value {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-  }
-  
-  .insight-label {
-    opacity: 0.9;
-    font-size: 0.9rem;
-  }
-  
-  @media (max-width: 768px) {
-    .analytics-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .analytics-container {
-      padding: 1rem;
-    }
-  }
-</style>
-` }) %>
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "analytics", crmTitle: "Analytics", crmSearchAction: "/dashboard" }) %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="analytics-container">
-  <div class="analytics-header">
-    <h1>Spending Analytics</h1>
-    <p>Gain insights into your spending patterns and habits</p>
-  </div>
-  
-  <% if (spendingTrends.length > 0) { %>
-    <div class="insights-card">
-      <h2>Quick Insights</h2>
-      <div class="insights-grid">
-        <div class="insight-item">
-          <div class="insight-value">₹<%= spendingTrends.reduce((sum, trend) => sum + trend.total_spent, 0).toFixed(0) %></div>
-          <div class="insight-label">Last <%= spendingTrends.length %> months</div>
-        </div>
-        <div class="insight-item">
-          <div class="insight-value">₹<%= (spendingTrends.reduce((sum, trend) => sum + trend.total_spent, 0) / spendingTrends.length).toFixed(0) %></div>
-          <div class="insight-label">Monthly Average</div>
-        </div>
-        <div class="insight-item">
-          <div class="insight-value"><%= categoryBreakdown[0]?.category || 'N/A' %></div>
-          <div class="insight-label">Top Category</div>
-        </div>
-        <div class="insight-item">
-          <div class="insight-value"><%= dailyPattern.sort((a, b) => b.total_spent - a.total_spent)[0]?.day_name || 'N/A' %></div>
-          <div class="insight-label">Peak Spending Day</div>
-        </div>
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Finance</p>
+        <h1 class="dashboard-title">Analytics</h1>
+        <p class="dashboard-subtitle">Track spending movement, category mix, daily patterns, and monthly comparisons from one analytics workspace.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/insights" class="btn-ghost">Open AI insights</a>
+        <a href="/expenses/export" class="btn-primary">Export data</a>
       </div>
     </div>
-  <% } %>
-  
-  <div class="analytics-grid">
-    <div class="chart-card">
-      <h3>Spending Trends (6 Months)</h3>
-      <div class="chart-container">
-        <canvas id="spendingTrendsChart"></canvas>
+
+    <section class="stats-grid">
+      <article class="stat-panel stat-panel--highlight">
+        <span class="stat-label">Tracked months</span>
+        <strong class="stat-value"><%= spendingTrends.length %></strong>
+        <span class="stat-meta">Months included in trend analysis</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Top category</span>
+        <strong class="stat-value stat-value--small"><%= categoryBreakdown[0]?.category || "N/A" %></strong>
+        <span class="stat-meta">Largest contributor in recent data</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Peak day</span>
+        <strong class="stat-value stat-value--small"><%= dailyPattern.slice().sort((a, b) => b.total_spent - a.total_spent)[0]?.day_name || "N/A" %></strong>
+        <span class="stat-meta">Highest recurring spend day</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Monthly average</span>
+        <strong class="stat-value stat-value--small">
+          ₹<%= spendingTrends.length ? (spendingTrends.reduce((sum, trend) => sum + trend.total_spent, 0) / spendingTrends.length).toFixed(0) : "0" %>
+        </strong>
+        <span class="stat-meta">Average monthly spend in range</span>
+      </article>
+    </section>
+
+    <section class="dashboard-grid dashboard-grid--advisory">
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Analytics summary</h2>
+          <span class="card-note">Quick readout</span>
+        </div>
+
+        <div class="insight-list">
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Trend total</span>
+            <strong>₹<%= spendingTrends.reduce((sum, trend) => sum + trend.total_spent, 0).toFixed(0) %></strong>
+            <p>Total spending represented across the visible monthly trend range.</p>
+          </div>
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Category concentration</span>
+            <strong><%= categoryBreakdown[0]?.percentage || 0 %>% in <%= categoryBreakdown[0]?.category || "N/A" %></strong>
+            <p>Your largest category share helps highlight where the strongest budget pressure sits.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>What this page is for</h2>
+          <span class="card-note">Finance role</span>
+        </div>
+
+        <div class="mini-metrics">
+          <div class="mini-metric"><span>Use Analytics to spot changes in pace and pattern, not just totals.</span></div>
+          <div class="mini-metric"><span>Use Budgets when you want thresholds and planning.</span></div>
+          <div class="mini-metric"><span>Use Insights when you want recommendations based on this data.</span></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="analytics-grid">
+      <article class="dashboard-card chart-card">
+        <div class="card-head">
+          <h2>Spending trends</h2>
+          <span class="card-note">6-month line chart</span>
+        </div>
+        <div class="chart-host">
+          <canvas id="spendingTrendsChart"></canvas>
+        </div>
+      </article>
+
+      <article class="dashboard-card chart-card">
+        <div class="card-head">
+          <h2>Category breakdown</h2>
+          <span class="card-note">3-month mix</span>
+        </div>
+        <div class="chart-host">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </article>
+
+      <article class="dashboard-card chart-card">
+        <div class="card-head">
+          <h2>Daily spending pattern</h2>
+          <span class="card-note">Day-of-week behavior</span>
+        </div>
+        <div class="chart-host">
+          <canvas id="dailyPatternChart"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Monthly category comparison</h2>
+        <span class="card-note">Stacked category view</span>
       </div>
-    </div>
-    
-    <div class="chart-card">
-      <h3>Category Breakdown (3 Months)</h3>
-      <div class="chart-container">
-        <canvas id="categoryChart"></canvas>
-      </div>
-    </div>
-    
-    <div class="chart-card">
-      <h3>Daily Spending Pattern</h3>
-      <div class="chart-container">
-        <canvas id="dailyPatternChart"></canvas>
-      </div>
-    </div>
-    
-    <div class="chart-card">
-      <h3>Monthly Category Comparison</h3>
-      <div class="chart-container">
+      <div class="chart-host chart-host--wide">
         <canvas id="monthlyComparisonChart"></canvas>
       </div>
-    </div>
+    </section>
   </div>
-</div>
+</section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Data from server
   const spendingTrendsData = <%- JSON.stringify(spendingTrends) %>;
   const categoryBreakdownData = <%- JSON.stringify(categoryBreakdown) %>;
   const dailyPatternData = <%- JSON.stringify(dailyPattern) %>;
   const monthlyComparisonData = <%- JSON.stringify(monthlyComparison) %>;
-  
-  // Chart defaults
-  Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  
-  // Spending Trends Chart
-  const spendingTrendsCtx = document.getElementById('spendingTrendsChart').getContext('2d');
-  new Chart(spendingTrendsCtx, {
+
+  Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
+  Chart.defaults.color = "#5f6b73";
+
+  new Chart(document.getElementById('spendingTrendsChart').getContext('2d'), {
     type: 'line',
     data: {
-      labels: spendingTrendsData.map(t => t.month),
+      labels: spendingTrendsData.map((t) => t.month),
       datasets: [{
-        label: 'Monthly Spending',
-        data: spendingTrendsData.map(t => t.total_spent),
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        tension: 0.1
+        label: 'Monthly spending',
+        data: spendingTrendsData.map((t) => t.total_spent),
+        borderColor: '#42a847',
+        backgroundColor: 'rgba(66, 168, 71, 0.14)',
+        tension: 0.25,
+        fill: true
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
+      plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return '₹' + value.toLocaleString();
-            }
-          }
+          ticks: { callback: (value) => '₹' + value.toLocaleString() }
         }
       }
     }
   });
-  
-  // Category Breakdown Chart
-  const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-  new Chart(categoryCtx, {
+
+  new Chart(document.getElementById('categoryChart').getContext('2d'), {
     type: 'doughnut',
     data: {
-      labels: categoryBreakdownData.map(c => c.category),
+      labels: categoryBreakdownData.map((c) => c.category),
       datasets: [{
-        data: categoryBreakdownData.map(c => c.total_spent),
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF',
-          '#FF9F40',
-          '#FF6384',
-          '#C9CBCF'
-        ]
+        data: categoryBreakdownData.map((c) => c.total_spent),
+        backgroundColor: ['#42a847', '#2d8cff', '#f6b100', '#4bc0c0', '#8a6df1', '#ff8b3d', '#ff6384', '#b0bec5']
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom'
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = '₹' + context.parsed.toLocaleString();
-              const percentage = categoryBreakdownData[context.dataIndex]?.percentage || 0;
-              return `${label}: ${value} (${percentage}%)`;
-            }
-          }
-        }
-      }
+      plugins: { legend: { position: 'bottom' } }
     }
   });
-  
-  // Daily Pattern Chart
-  const dailyPatternCtx = document.getElementById('dailyPatternChart').getContext('2d');
-  new Chart(dailyPatternCtx, {
+
+  new Chart(document.getElementById('dailyPatternChart').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: dailyPatternData.map(d => d.day_name),
+      labels: dailyPatternData.map((d) => d.day_name),
       datasets: [{
-        label: 'Total Spent',
-        data: dailyPatternData.map(d => d.total_spent),
-        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
+        label: 'Total spent',
+        data: dailyPatternData.map((d) => d.total_spent),
+        backgroundColor: '#2d8cff'
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
+      plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return '₹' + value.toLocaleString();
-            }
-          }
+          ticks: { callback: (value) => '₹' + value.toLocaleString() }
         }
       }
     }
   });
-  
-  // Monthly Comparison Chart
-  const monthlyComparisonCtx = document.getElementById('monthlyComparisonChart').getContext('2d');
-  
-  // Process data for stacked bar chart
+
   const monthlyData = {};
-  
-  monthlyComparisonData.forEach(item => {
-    if (!monthlyData[item.month]) {
-      monthlyData[item.month] = {};
-    }
+  monthlyComparisonData.forEach((item) => {
+    if (!monthlyData[item.month]) monthlyData[item.month] = {};
     monthlyData[item.month][item.category] = item.amount;
   });
-  
+
   const months = Object.keys(monthlyData).sort().reverse().slice(0, 6);
-  const categories = [...new Set(monthlyComparisonData.map(item => item.category))];
-  
-  const datasets = categories.map((category, index) => ({
-    label: category,
-    data: months.map(month => monthlyData[month]?.[category] || 0),
-    backgroundColor: [
-      '#FF6384',
-      '#36A2EB',
-      '#FFCE56',
-      '#4BC0C0',
-      '#9966FF',
-      '#FF9F40',
-      '#FF6384',
-      '#C9CBCF'
-    ][index % 8]
-  }));
-  
-  new Chart(monthlyComparisonCtx, {
+  const categories = [...new Set(monthlyComparisonData.map((item) => item.category))];
+  const palette = ['#42a847', '#2d8cff', '#f6b100', '#4bc0c0', '#8a6df1', '#ff8b3d', '#ff6384', '#b0bec5'];
+
+  new Chart(document.getElementById('monthlyComparisonChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: months,
-      datasets: datasets
+      datasets: categories.map((category, index) => ({
+        label: category,
+        data: months.map((month) => monthlyData[month]?.[category] || 0),
+        backgroundColor: palette[index % palette.length]
+      }))
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom'
-        }
-      },
       scales: {
-        x: {
-          stacked: true
-        },
+        x: { stacked: true },
         y: {
           stacked: true,
           beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return '₹' + value.toLocaleString();
-            }
-          }
+          ticks: { callback: (value) => '₹' + value.toLocaleString() }
         }
       }
     }
   });
 </script>
 
-<%- include("partials/footer") %>
+<%- include("partials/crm-shell-end") %>

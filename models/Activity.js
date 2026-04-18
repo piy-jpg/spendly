@@ -1,8 +1,8 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require("crypto");
 
 class Activity {
   constructor(activityData = {}) {
-    this._id = activityData._id || uuidv4();
+    this._id = activityData._id || randomUUID();
     this.type = activityData.type || '';
     this.message = activityData.message || '';
     this.userId = activityData.userId || null;

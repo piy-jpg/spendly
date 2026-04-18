@@ -1,0 +1,68 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "groups", crmTitle: "Groups", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Team</p>
+        <h1 class="dashboard-title">Groups</h1>
+        <p class="dashboard-subtitle">Category-based groups that organize spending ownership, volume, and follow-up focus.</p>
+      </div>
+      <a href="/people" class="btn-ghost">View people</a>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel">
+        <span class="stat-label">Groups</span>
+        <strong class="stat-value"><%= groups.length %></strong>
+        <span class="stat-meta">Built from your active categories</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Top group</span>
+        <strong class="stat-value stat-value--small"><%= groups[0] ? groups[0].name : "N/A" %></strong>
+        <span class="stat-meta">Highest contribution to visible spend</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Budget impact</span>
+        <strong class="stat-value stat-value--small"><%= budgetUsedPct %>%</strong>
+        <span class="stat-meta">Current month budget utilization</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Projection</span>
+        <strong class="stat-value stat-value--small">₹<%= velocity.projectedTotal.toFixed(2) %></strong>
+        <span class="stat-meta">Expected month-end spend</span>
+      </article>
+    </section>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Group overview</h2>
+        <span class="card-note">Spend and member load</span>
+      </div>
+
+      <div class="category-stack">
+        <% if (groups.length) { %>
+          <% groups.forEach((group) => { %>
+            <div class="category-row">
+              <div class="category-row-top">
+                <span><%= group.name %></span>
+                <span><%= group.memberCount %> members</span>
+              </div>
+              <div class="category-bar-track">
+                <div class="category-bar-fill" style="width:<%= group.percentage %>%;"></div>
+              </div>
+              <div class="category-row-bottom"><%= group.description %> Total managed: ₹<%= group.total.toFixed(2) %>.</div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty-state">
+            <h3>No groups yet</h3>
+            <p>Once categories appear in your expense data, they will be grouped here automatically.</p>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

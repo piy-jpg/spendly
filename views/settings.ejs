@@ -1,0 +1,92 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "settings", crmTitle: "Settings", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Account settings</p>
+        <h1 class="dashboard-title">Settings</h1>
+        <p class="dashboard-subtitle">A simple account page for profile details, theme preference guidance, and export shortcuts.</p>
+      </div>
+      <a href="/profile" class="btn-ghost">Back to profile</a>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel">
+        <span class="stat-label">Name</span>
+        <strong class="stat-value stat-value--small"><%= currentUser.name %></strong>
+        <span class="stat-meta">Account owner</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Email</span>
+        <strong class="stat-value stat-value--small"><%= currentUser.email %></strong>
+        <span class="stat-meta">Used for sign in</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Saved budget</span>
+        <strong class="stat-value stat-value--small"><%= monthlyBudget ? `₹${monthlyBudget.toFixed(2)}` : "Not set" %></strong>
+        <span class="stat-meta">Current monthly budget</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Tracked expenses</span>
+        <strong class="stat-value"><%= totalExpenses %></strong>
+        <span class="stat-meta"><%= latestDate ? `Latest on ${latestDate}` : "No expenses recorded yet" %></span>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Preferences</h2>
+          <span class="card-note">Available right now</span>
+        </div>
+
+        <div class="insight-list">
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Theme</span>
+            <strong>Light and dark mode</strong>
+            <p>Use the Theme button in the navbar to switch modes. Your preference is stored in the browser.</p>
+          </div>
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">Data export</span>
+            <strong>CSV download</strong>
+            <p>Use the export action from Finance pages or the profile menu anytime you need a backup of your expenses.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Quick actions</h2>
+          <span class="card-note">Jump where you need</span>
+        </div>
+
+        <div class="category-stack">
+          <div class="category-row">
+            <div class="category-row-top">
+              <span>Manage profile</span>
+              <a href="/profile">Open</a>
+            </div>
+            <div class="category-row-bottom">View your account snapshot and current financial overview.</div>
+          </div>
+          <div class="category-row">
+            <div class="category-row-top">
+              <span>Review budgets</span>
+              <a href="/budgets">Open</a>
+            </div>
+            <div class="category-row-bottom">Adjust your monthly budget and monitor savings targets.</div>
+          </div>
+          <div class="category-row">
+            <div class="category-row-top">
+              <span>Export data</span>
+              <a href="/expenses/export">Download</a>
+            </div>
+            <div class="category-row-bottom">Download a CSV of your expenses for reporting or backup.</div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

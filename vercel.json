@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "spendly-car-dekho",
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/server.js",
+      "dest": "/"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {},
+  "installCommand": "npm install",
+  "buildCommand": "echo 'No build required for Node.js'",
+  "outputDirectory": ".",
+  "framework": null,
+  "regions": ["iad1"],
+  "functionsDirectory": "api"
+}

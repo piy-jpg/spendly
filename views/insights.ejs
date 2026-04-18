@@ -1,0 +1,75 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "insights", crmTitle: "Insights (AI)", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Smart</p>
+        <h1 class="dashboard-title">Insights (AI)</h1>
+        <p class="dashboard-subtitle">AI-style summaries and next-step recommendations generated from your live spending activity.</p>
+      </div>
+      <a href="/analytics" class="btn-ghost">Open analytics</a>
+    </div>
+
+    <section class="stats-grid">
+      <article class="stat-panel stat-panel--highlight">
+        <span class="stat-label">AI cards</span>
+        <strong class="stat-value"><%= aiCards.length %></strong>
+        <span class="stat-meta">Actionable insights available now</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Budget signal</span>
+        <strong class="stat-value stat-value--small"><%= budgetAlert ? budgetAlert.label : "Stable" %></strong>
+        <span class="stat-meta">Primary budget interpretation</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Risk alerts</span>
+        <strong class="stat-value"><%= riskAlerts.length %></strong>
+        <span class="stat-meta">Watch items the system found</span>
+      </article>
+      <article class="stat-panel">
+        <span class="stat-label">Savings target</span>
+        <strong class="stat-value stat-value--small"><%= savingsGoal.percent %>%</strong>
+        <span class="stat-meta">Progress toward reserve goal</span>
+      </article>
+    </section>
+
+    <section class="dashboard-grid dashboard-grid--advisory">
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>AI summary</h2>
+          <span class="card-note">Generated guidance</span>
+        </div>
+
+        <div class="insight-list">
+          <% aiCards.forEach((card) => { %>
+            <div class="insight-item insight-item--smart">
+              <span class="insight-label"><%= card.title %></span>
+              <strong><%= card.value %></strong>
+              <p><%= card.body %></p>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <div class="card-head">
+          <h2>Detected risks</h2>
+          <span class="card-note">Priority review</span>
+        </div>
+
+        <% if (riskAlerts.length) { %>
+          <div class="alert-list">
+            <% riskAlerts.forEach((alert) => { %>
+              <div class="alert-item"><%= alert %></div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="empty-copy">No risk spikes detected right now.</p>
+        <% } %>
+      </article>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

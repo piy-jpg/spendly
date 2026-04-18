@@ -1,4 +1,4 @@
-<%- include("partials/header", { title, currentUser, flashes, extraCss: null }) %>
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "expenses", crmTitle: formMode === "add" ? "Add Expense" : "Edit Expense", crmSearchAction: "/expenses" }) %>
 
 <section class="editor-page">
   <div class="editor-shell">
@@ -46,4 +46,4 @@
   </div>
 </section>
 
-<%- include("partials/footer") %>
+<%- include("partials/crm-shell-end") %>

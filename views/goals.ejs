@@ -1,0 +1,52 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "goals", crmTitle: "Goals", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Finance</p>
+        <h1 class="dashboard-title">Goals</h1>
+        <p class="dashboard-subtitle">Track savings and budget discipline goals from the same CRM-style workspace.</p>
+      </div>
+      <a href="/budgets" class="btn-primary">Open budgets</a>
+    </div>
+
+    <section class="stats-grid">
+      <% goals.forEach((goal) => { %>
+        <article class="stat-panel">
+          <span class="stat-label"><%= goal.title %></span>
+          <strong class="stat-value stat-value--small"><%= goal.percent %>%</strong>
+          <span class="stat-meta"><%= goal.detail %></span>
+        </article>
+      <% }) %>
+    </section>
+
+    <section class="dashboard-grid">
+      <% goals.forEach((goal) => { %>
+        <article class="dashboard-card">
+          <div class="card-head">
+            <h2><%= goal.title %></h2>
+            <span class="card-note">Target ₹<%= goal.target.toFixed(0) %></span>
+          </div>
+          <div class="goal-card">
+            <div class="goal-amounts">
+              <div>
+                <span class="stat-label">Current</span>
+                <strong>₹<%= goal.current.toFixed(0) %></strong>
+              </div>
+              <div>
+                <span class="stat-label">Target</span>
+                <strong>₹<%= goal.target.toFixed(0) %></strong>
+              </div>
+            </div>
+            <div class="progress-track progress-track--goal">
+              <div class="progress-fill progress-fill--goal" style="width:<%= goal.percent %>%;"></div>
+            </div>
+          </div>
+        </article>
+      <% }) %>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

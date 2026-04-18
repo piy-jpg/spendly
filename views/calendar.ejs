@@ -1,0 +1,40 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "calendar", crmTitle: "Calendar", crmSearchAction: "/dashboard" }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">Tools</p>
+        <h1 class="dashboard-title">Calendar / Timeline</h1>
+        <p class="dashboard-subtitle">Review spending activity grouped by date so you can spot bursts and quiet periods quickly.</p>
+      </div>
+      <a href="/dashboard" class="btn-ghost">Back to dashboard</a>
+    </div>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Date timeline</h2>
+        <span class="card-note">Grouped expense log</span>
+      </div>
+
+      <% if (calendarRows.length) { %>
+        <div class="insight-list">
+          <% calendarRows.forEach((row) => { %>
+            <div class="insight-item insight-item--smart">
+              <span class="insight-label"><%= row.date %></span>
+              <strong>₹<%= row.total.toFixed(2) %></strong>
+              <p><%= row.items.map((item) => `${item.title} (${item.category})`).join(", ") %></p>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <h3>No timeline yet</h3>
+          <p>Add expenses and they will appear here grouped by date.</p>
+        </div>
+      <% } %>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>

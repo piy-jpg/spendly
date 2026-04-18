@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const fs = require("fs");
 const path = require("path");
 
 const express = require("express");
@@ -29,8 +30,10 @@ const {
 } = require("./lib/db");
 
 const app = express();
-const PORT = Number(process.env.PORT || 5001);
-const sessionStore = new Map();
+const PORT = Number(process.env.PORT || 5002);
+const HOST = process.env.HOST || "127.0.0.1";
+const sessionFilePath = path.join(__dirname, "spendly-sessions.json");
+const sessionStore = loadSessionStore();
 
 const CATEGORIES = [
   "Food",
@@ -49,6 +52,32 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use("/static", express.static(path.join(__dirname, "static")));
+app.use("/css", express.static(path.join(__dirname, "public/css")));
+app.use("/js", express.static(path.join(__dirname, "public/js")));
+
+function loadSessionStore() {
+  try {
+    if (!fs.existsSync(sessionFilePath)) {
+      return new Map();
+    }
+
+    const raw = fs.readFileSync(sessionFilePath, "utf8");
+    const parsed = JSON.parse(raw);
+    return new Map(Object.entries(parsed));
+  } catch (error) {
+    logRuntimeError("session.load", error);
+    return new Map();
+  }
+}
+
+function saveSessionStore() {
+  try {
+    const payload = Object.fromEntries(sessionStore.entries());
+    fs.writeFileSync(sessionFilePath, JSON.stringify(payload), "utf8");
+  } catch (error) {
+    logRuntimeError("session.save", error);
+  }
+}
 
 function parseCookies(cookieHeader = "") {
   return cookieHeader.split(";").reduce((acc, part) => {
@@ -64,6 +93,7 @@ function parseCookies(cookieHeader = "") {
 function createSession() {
   const id = crypto.randomUUID();
   sessionStore.set(id, {});
+  saveSessionStore();
   return { id, data: sessionStore.get(id) };
 }
 
@@ -958,12 +988,314 @@ function buildNavigationViewModel(user) {
     quickDateFilters: buildQuickDateFilters(),
     quickLinks: {
       dashboard: "/dashboard",
-      expenses: "/dashboard#expenses",
-      reports: "/dashboard#reports",
-      budget: "/dashboard#budget",
-      insights: "/dashboard#insights",
+      expenses: "/expenses",
+      transactions: "/transactions",
+      budget: "/budgets",
+      analytics: "/analytics",
+      goals: "/goals",
+      people: "/people",
+      groups: "/groups",
+      chat: "/chat",
+      insights: "/insights",
+      recommendations: "/recommendations",
+      forecast: "/forecast",
+      calendar: "/calendar",
+      reports: "/reports",
+      notifications: "/notifications",
+      profile: "/profile",
+      settings: "/settings",
+      theme: "/theme",
+      help: "/help",
       export: "/expenses/export",
     },
+  };
+}
+
+function buildTransactionsViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const transactions = dashboardData.expenses.map((expense, index) => ({
+    ...expense,
+    reference: `TRX-${String(expense.id).padStart(4, "0")}`,
+    status: index % 3 === 0 ? "Cleared" : index % 3 === 1 ? "Processing" : "Logged",
+    source: expense.notes ? "Manual note" : "Manual entry",
+  }));
+
+  return {
+    ...dashboardData,
+    transactions,
+  };
+}
+
+function buildPeopleViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const categoryLeaders = dashboardData.categoryRows.slice(0, 6).map((row, index) => ({
+    id: index + 1,
+    name: `${row.category} Lead`,
+    role: `${row.category} owner`,
+    email: `${row.category.toLowerCase()}@spendly.local`,
+    phone: `+91 9000${String(index + 1).padStart(5, "0")}`,
+    spend: row.total,
+    percentage: row.percentage,
+  }));
+
+  const people = [
+    {
+      id: 0,
+      name: req.user.name,
+      role: "Workspace owner",
+      email: req.user.email,
+      phone: "+91 9000000000",
+      spend: dashboardData.monthlySpend,
+      percentage: dashboardData.monthlyBudget ? dashboardData.budgetUsedPct : 0,
+    },
+    ...categoryLeaders,
+  ];
+
+  return {
+    ...dashboardData,
+    people,
+  };
+}
+
+function buildGroupsViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const groups = dashboardData.categoryRows.map((row, index) => ({
+    id: index + 1,
+    name: `${row.category} Group`,
+    description: `Tracks ${row.category.toLowerCase()} spending patterns and follow-ups.`,
+    memberCount: Math.max(1, Math.round((row.percentage || 10) / 10)),
+    total: row.total,
+    percentage: row.percentage,
+  }));
+
+  return {
+    ...dashboardData,
+    groups,
+  };
+}
+
+function buildInsightsPageViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const aiCards = [
+    ...dashboardData.insights.map((item) => ({
+      title: item.label,
+      value: item.value,
+      body: item.detail,
+    })),
+    ...dashboardData.advisorMessages.map((message, index) => ({
+      title: `AI Action ${index + 1}`,
+      value: "Recommended",
+      body: message,
+    })),
+  ];
+
+  return {
+    ...dashboardData,
+    aiCards,
+  };
+}
+
+function buildNotificationsViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const notifications = [];
+
+  if (dashboardData.budgetAlert) {
+    notifications.push({
+      title: dashboardData.budgetAlert.label,
+      body: dashboardData.budgetAlert.message,
+      tone: dashboardData.budgetAlert.tier,
+    });
+  }
+
+  dashboardData.riskAlerts.forEach((alert) => {
+    notifications.push({
+      title: "Risk alert",
+      body: alert,
+      tone: "warning",
+    });
+  });
+
+  dashboardData.advisorMessages.forEach((message) => {
+    notifications.push({
+      title: "Suggested action",
+      body: message,
+      tone: "safe",
+    });
+  });
+
+  if (!notifications.length) {
+    notifications.push({
+      title: "All quiet",
+      body: "There are no urgent alerts right now. Your dashboard looks stable.",
+      tone: "safe",
+    });
+  }
+
+  return {
+    ...dashboardData,
+    notifications,
+  };
+}
+
+function buildGoalsViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const goals = [
+    {
+      title: "Monthly savings goal",
+      target: dashboardData.savingsGoal.target,
+      current: dashboardData.savingsGoal.saved,
+      percent: dashboardData.savingsGoal.percent,
+      detail: "Reserve part of the remaining budget before the month ends.",
+    },
+    {
+      title: "Budget discipline goal",
+      target: dashboardData.monthlyBudget || Math.max(dashboardData.monthlySpend, 1000),
+      current: Math.min(dashboardData.monthlySpend, dashboardData.monthlyBudget || dashboardData.monthlySpend),
+      percent: dashboardData.monthlyBudget ? Math.min(dashboardData.budgetUsedPct, 100) : 0,
+      detail: "Stay within the monthly cap and improve your financial health score.",
+    },
+  ];
+
+  return {
+    ...dashboardData,
+    goals,
+  };
+}
+
+function buildRecommendationsViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const recommendations = [
+    ...dashboardData.advisorMessages.map((message, index) => ({
+      title: `Recommendation ${index + 1}`,
+      body: message,
+      priority: "Action",
+    })),
+    ...dashboardData.riskAlerts.map((alert) => ({
+      title: "Watchlist",
+      body: alert,
+      priority: "Warning",
+    })),
+  ];
+
+  return {
+    ...dashboardData,
+    recommendations,
+  };
+}
+
+function buildForecastViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const forecastCards = [
+    {
+      label: "Projected month-end",
+      value: dashboardData.velocity.projectedTotal,
+      detail: "Based on your current daily spending rate.",
+    },
+    {
+      label: "Daily rate",
+      value: dashboardData.velocity.dailyRate,
+      detail: "Average spend per day this month.",
+    },
+    {
+      label: "Runway days",
+      value: dashboardData.velocity.runwayDays === null ? 0 : dashboardData.velocity.runwayDays,
+      detail: "Estimated days before budget runs out at current pace.",
+    },
+  ];
+
+  return {
+    ...dashboardData,
+    forecastCards,
+  };
+}
+
+function buildCalendarViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const grouped = dashboardData.expenses.reduce((acc, expense) => {
+    acc[expense.expense_date] = acc[expense.expense_date] || [];
+    acc[expense.expense_date].push(expense);
+    return acc;
+  }, {});
+
+  const calendarRows = Object.entries(grouped)
+    .sort(([a], [b]) => (a < b ? 1 : -1))
+    .map(([date, items]) => ({
+      date,
+      items,
+      total: items.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    }));
+
+  return {
+    ...dashboardData,
+    calendarRows,
+  };
+}
+
+function buildChatViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const messages = [
+    {
+      author: req.user.name,
+      channel: "Finance team",
+      text: "Budget pacing looks tight this week. Review food and travel first.",
+      time: "Just now",
+    },
+    ...dashboardData.advisorMessages.slice(0, 2).map((message, index) => ({
+      author: `Group ${index + 1}`,
+      channel: "Shared expenses",
+      text: message,
+      time: `${index + 1}h ago`,
+    })),
+  ];
+
+  return {
+    ...dashboardData,
+    messages,
+  };
+}
+
+function buildReportsViewModel(req) {
+  const dashboardData = buildDashboardViewModel(req);
+  const reportCards = [
+    { label: "Visible spend", value: dashboardData.totalAmount, note: "Filtered data export" },
+    { label: "Monthly spend", value: dashboardData.monthlySpend, note: "Current month summary" },
+    { label: "Transactions", value: dashboardData.summary.total_count || 0, note: "Recorded expense rows" },
+  ];
+
+  return {
+    ...dashboardData,
+    reportCards,
+  };
+}
+
+function buildThemeViewModel(req) {
+  return {
+    ...buildDashboardViewModel(req),
+    themeTips: [
+      "Use the Theme button in the top bar to switch instantly.",
+      "Your preferred mode is remembered in the browser.",
+      "Theme changes apply across the CRM shell pages.",
+    ],
+  };
+}
+
+function buildHelpViewModel(req) {
+  return {
+    ...buildDashboardViewModel(req),
+    faqItems: [
+      {
+        question: "How do I add an expense quickly?",
+        answer: "Use the Add Expense action in the CRM shell or the quick-add input in the shared navigation.",
+      },
+      {
+        question: "Where do I review budgeting issues?",
+        answer: "Use Budgets for controls, Insights for recommendations, and Notifications for urgent alerts.",
+      },
+      {
+        question: "How do I export data?",
+        answer: "Open Reports / Export or use the export shortcut from Finance pages.",
+      },
+    ],
   };
 }
 
@@ -973,6 +1305,19 @@ function render(res, view, options = {}) {
     ...options,
   });
 }
+
+function logRuntimeError(label, error) {
+  const details = error instanceof Error ? error.stack || error.message : String(error);
+  console.error(`[${label}] ${details}`);
+}
+
+process.on("uncaughtException", (error) => {
+  logRuntimeError("uncaughtException", error);
+});
+
+process.on("unhandledRejection", (error) => {
+  logRuntimeError("unhandledRejection", error);
+});
 
 app.use((req, res, next) => {
   const session = getSession(req, res);
@@ -987,6 +1332,7 @@ app.use((req, res, next) => {
   res.locals.navMeta = req.user ? buildNavigationViewModel(req.user) : null;
   res.locals.flashes = req.session.flashes || [];
   req.session.flashes = [];
+  res.on("finish", saveSessionStore);
   next();
 });
 
@@ -1005,6 +1351,17 @@ app.get("/", (req, res) => {
   return render(res, "landing", { title: "Spendly - Track Every Rupee" });
 });
 
+app.get("/health", (req, res) => {
+  return res.status(200).json({
+    status: "ok",
+    app: "spendly",
+    frontend: "ejs",
+    backend: "express",
+    database: "sqlite",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get("/dashboard", requireAuth, (req, res) => {
   return render(res, "dashboard", {
     title: "Dashboard - Spendly",
@@ -1014,19 +1371,20 @@ app.get("/dashboard", requireAuth, (req, res) => {
 
 app.post("/budget", requireAuth, (req, res) => {
   const monthlyBudget = Number.parseFloat(String(req.body.monthly_budget || "").trim());
+  const redirectTarget = req.get("referer") || "/dashboard";
   if (!Number.isFinite(monthlyBudget)) {
     addFlash(req, "error", "Monthly budget must be a valid number.");
-    return res.redirect("/dashboard");
+    return res.redirect(redirectTarget);
   }
 
   if (monthlyBudget < 0) {
     addFlash(req, "error", "Monthly budget cannot be negative.");
-    return res.redirect("/dashboard");
+    return res.redirect(redirectTarget);
   }
 
   upsertBudget(req.user.id, Number(monthlyBudget.toFixed(2)));
   addFlash(req, "success", "Monthly budget updated.");
-  return res.redirect("/dashboard");
+  return res.redirect(redirectTarget);
 });
 
 app.get("/expenses/export", requireAuth, (req, res) => {
@@ -1054,6 +1412,84 @@ app.get("/expenses/export", requireAuth, (req, res) => {
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
   res.setHeader("Content-Disposition", 'attachment; filename="spendly-expenses.csv"');
   return res.send(csvText);
+});
+
+app.get("/expenses", requireAuth, (req, res) => {
+  const dashboardData = buildDashboardViewModel(req);
+  return render(res, "expenses", {
+    title: "Expenses - Spendly",
+    ...dashboardData,
+  });
+});
+
+app.get("/transactions", requireAuth, (req, res) => {
+  return render(res, "transactions", {
+    title: "Transactions - Spendly",
+    ...buildTransactionsViewModel(req),
+  });
+});
+
+app.get("/goals", requireAuth, (req, res) => {
+  return render(res, "goals", {
+    title: "Goals - Spendly",
+    ...buildGoalsViewModel(req),
+  });
+});
+
+app.get("/people", requireAuth, (req, res) => {
+  return render(res, "people", {
+    title: "People - Spendly",
+    ...buildPeopleViewModel(req),
+  });
+});
+
+app.get("/groups", requireAuth, (req, res) => {
+  return render(res, "groups", {
+    title: "Groups - Spendly",
+    ...buildGroupsViewModel(req),
+  });
+});
+
+app.get("/chat", requireAuth, (req, res) => {
+  return render(res, "chat", {
+    title: "Chat - Spendly",
+    ...buildChatViewModel(req),
+  });
+});
+
+app.get("/insights", requireAuth, (req, res) => {
+  return render(res, "insights", {
+    title: "Insights - Spendly",
+    ...buildInsightsPageViewModel(req),
+  });
+});
+
+app.get("/recommendations", requireAuth, (req, res) => {
+  return render(res, "recommendations", {
+    title: "Recommendations - Spendly",
+    ...buildRecommendationsViewModel(req),
+  });
+});
+
+app.get("/forecast", requireAuth, (req, res) => {
+  return render(res, "forecast", {
+    title: "Forecast - Spendly",
+    ...buildForecastViewModel(req),
+  });
+});
+
+app.get("/calendar", requireAuth, (req, res) => {
+  return render(res, "calendar", {
+    title: "Calendar - Spendly",
+    ...buildCalendarViewModel(req),
+  });
+});
+
+app.get("/notifications", requireAuth, (req, res) => {
+  return render(res, "notifications", {
+    title: "Notifications - Spendly",
+    ...buildNotificationsViewModel(req),
+  });
 });
 
 app.route("/register")
@@ -1150,6 +1586,34 @@ app.get("/profile", requireAuth, (req, res) => {
   });
 });
 
+app.get("/settings", requireAuth, (req, res) => {
+  const expenses = getExpensesForUser(req.user.id);
+  const budget = getBudgetForUser(req.user.id);
+  const { totals } = getExpenseSummary(req.user.id);
+
+  return render(res, "settings", {
+    title: "Settings - Spendly",
+    totalExpenses: expenses.length,
+    latestDate: totals.latest_date || "",
+    monthlyBudget: budget ? Number(budget.monthly_budget || 0) : 0,
+  });
+});
+
+app.get("/theme", requireAuth, (req, res) => {
+  return render(res, "theme", {
+    title: "Theme Toggle - Spendly",
+    ...buildThemeViewModel(req),
+  });
+});
+
+app.get("/budgets", requireAuth, (req, res) => {
+  const dashboardData = buildDashboardViewModel(req);
+  return render(res, "budgets", {
+    title: "Budgets - Spendly",
+    ...dashboardData,
+  });
+});
+
 app.get("/analytics", requireAuth, (req, res) => {
   const spendingTrends = getSpendingTrends(req.user.id);
   const categoryBreakdown = getCategoryBreakdown(req.user.id);
@@ -1162,6 +1626,20 @@ app.get("/analytics", requireAuth, (req, res) => {
     categoryBreakdown,
     dailyPattern,
     monthlyComparison,
+  });
+});
+
+app.get("/reports", requireAuth, (req, res) => {
+  return render(res, "reports", {
+    title: "Reports / Export - Spendly",
+    ...buildReportsViewModel(req),
+  });
+});
+
+app.get("/help", requireAuth, (req, res) => {
+  return render(res, "help", {
+    title: "Help - Spendly",
+    ...buildHelpViewModel(req),
   });
 });
 
@@ -1410,6 +1888,33 @@ app.route("/expenses/:id/delete")
     return res.redirect("/dashboard");
   });
 
-app.listen(PORT, () => {
-  console.log(`Spendly running on http://127.0.0.1:${PORT}`);
+app.use((error, req, res, next) => {
+  logRuntimeError(`${req.method} ${req.originalUrl}`, error);
+
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  if (req.session) {
+    addFlash(req, "error", "Something went wrong. The error has been logged.");
+  }
+
+  return res.status(500).redirect(req.user ? "/dashboard" : "/login");
+});
+
+const server = app.listen(PORT, HOST);
+
+server.once("listening", () => {
+  const address = server.address();
+  const boundHost = address && typeof address === "object" ? address.address : HOST;
+  const boundPort = address && typeof address === "object" ? address.port : PORT;
+  console.log(`Spendly running on http://${boundHost}:${boundPort}`);
+});
+
+server.once("error", (error) => {
+  if (error && typeof error === "object") {
+    error.message = `${error.message}. Check whether port ${PORT} is already in use or blocked in this environment.`;
+  }
+  logRuntimeError("server.listen", error);
+  process.exitCode = 1;
 });

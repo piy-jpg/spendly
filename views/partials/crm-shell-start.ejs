@@ -1,0 +1,124 @@
+<%
+  const activeNav = typeof crmActiveNav !== "undefined" ? crmActiveNav : "dashboard";
+  const crmTitleValue = typeof crmTitle !== "undefined" ? crmTitle : "Workspace";
+  const crmSearchActionValue = typeof crmSearchAction !== "undefined" ? crmSearchAction : "/dashboard";
+  const crmSearchValue = query && typeof query.q === "string" ? query.q : "";
+  const crmShowAddButtonValue = typeof crmShowAddButton !== "undefined" ? crmShowAddButton : true;
+  const navSections = [
+    {
+      title: "MAIN",
+      items: [{ key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "house" }],
+    },
+    {
+      title: "FINANCE",
+      items: [
+        { key: "expenses", label: "Expenses", href: "/expenses", icon: "receipt" },
+        { key: "transactions", label: "Transactions", href: "/transactions", icon: "money-bill-transfer" },
+        { key: "budgets", label: "Budgets", href: "/budgets", icon: "wallet" },
+        { key: "analytics", label: "Analytics", href: "/analytics", icon: "chart-line" },
+        { key: "goals", label: "Goals", href: "/goals", icon: "bullseye" },
+      ],
+    },
+    {
+      title: "TEAM",
+      items: [
+        { key: "people", label: "People", href: "/people", icon: "users" },
+        { key: "groups", label: "Groups", href: "/groups", icon: "layer-group" },
+        { key: "chat", label: "Chat", href: "/chat", icon: "comments" },
+      ],
+    },
+    {
+      title: "SMART",
+      items: [
+        { key: "insights", label: "Insights (AI)", href: "/insights", icon: "sparkles" },
+        { key: "recommendations", label: "Recommendations", href: "/recommendations", icon: "lightbulb" },
+        { key: "forecast", label: "Forecast", href: "/forecast", icon: "arrow-trend-up" },
+      ],
+    },
+    {
+      title: "TOOLS",
+      items: [
+        { key: "calendar", label: "Calendar", href: "/calendar", icon: "calendar-days" },
+        { key: "reports", label: "Reports / Export", href: "/reports", icon: "share-nodes" },
+      ],
+    },
+    {
+      title: "SYSTEM",
+      items: [
+        { key: "notifications", label: "Notifications", href: "/notifications", icon: "bell" },
+        { key: "profile", label: "Profile", href: "/profile", icon: "user" },
+        { key: "settings", label: "Settings", href: "/settings", icon: "gear" },
+        { key: "theme", label: "Theme Toggle", href: "/theme", icon: "moon" },
+        { key: "help", label: "Help", href: "/help", icon: "circle-question" },
+        { key: "logout", label: "Logout", href: "/logout", icon: "right-from-bracket" },
+      ],
+    },
+  ];
+%>
+<%- include("header", { title, currentUser, flashes, extraCss: null, bodyClass: "dashboard-crm-page" }) %>
+
+<section class="crm-shell">
+  <aside class="crm-sidebar">
+    <div class="crm-sidebar-head">
+      <div class="crm-user-avatar"><%= currentUser.name.charAt(0).toUpperCase() %></div>
+      <div class="crm-user-copy">
+        <strong><%= currentUser.name %></strong>
+        <span>Spendly workspace</span>
+      </div>
+      <a href="/settings" class="crm-close-link" aria-label="Open settings">×</a>
+    </div>
+
+    <div class="crm-sidebar-tools">
+      <button type="button" class="crm-sidebar-add" data-modal-open="add-expense-modal">+ Add Expense</button>
+      <form method="GET" action="<%= crmSearchActionValue %>" class="crm-sidebar-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="q" value="<%= crmSearchValue %>" placeholder="Search">
+      </form>
+    </div>
+
+    <nav class="crm-nav">
+      <% navSections.forEach((section) => { %>
+        <div class="crm-nav-section">
+          <div class="crm-nav-heading"><%= section.title %></div>
+          <% section.items.forEach((item) => { %>
+            <a href="<%= item.href %>" class="crm-nav-link <%= activeNav === item.key ? 'is-active' : '' %>">
+              <i class="fa-solid fa-<%= item.icon %>"></i>
+              <span><%= item.label %></span>
+            </a>
+          <% }) %>
+        </div>
+      <% }) %>
+    </nav>
+
+    <div class="crm-sidebar-foot">
+      <div class="crm-brand-lockup">
+        <span class="crm-brand-icon">◈</span>
+        <strong>SPENDLY</strong>
+      </div>
+      <a href="/logout" class="crm-foot-link">Logout</a>
+    </div>
+  </aside>
+
+  <div class="crm-main">
+    <header class="crm-topbar">
+      <div class="crm-topbar-title"><%= crmTitleValue %></div>
+
+      <form method="GET" action="<%= crmSearchActionValue %>" class="crm-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="q" value="<%= crmSearchValue %>" placeholder="Search">
+      </form>
+
+      <div class="crm-topbar-actions">
+        <% if (navMeta) { %>
+          <div class="crm-trial-pill">Health score <strong><%= navMeta.healthScore %>/100</strong></div>
+        <% } %>
+        <% if (crmShowAddButtonValue) { %>
+          <button type="button" class="crm-purchase-btn" data-modal-open="add-expense-modal">ADD EXPENSE</button>
+        <% } %>
+        <a href="/expenses/export" class="crm-icon-btn" aria-label="Export data"><i class="fa-solid fa-plus"></i></a>
+        <a href="/notifications" class="crm-icon-btn" aria-label="Notifications"><i class="fa-solid fa-bell"></i></a>
+      </div>
+    </header>
+
+    <div class="crm-content crm-content--single">
+      <section class="crm-page">

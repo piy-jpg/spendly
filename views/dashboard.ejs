@@ -1,1177 +1,348 @@
 <%
-  const exportParams = new URLSearchParams();
-  if (filters.q) exportParams.set("q", filters.q);
-  filters.categories.forEach((category) => exportParams.append("categories", category));
-  if (filters.startDate) exportParams.set("start_date", filters.startDate);
-  if (filters.endDate) exportParams.set("end_date", filters.endDate);
-  if (filters.minAmount !== "") exportParams.set("min_amount", filters.minAmount);
-  if (filters.maxAmount !== "") exportParams.set("max_amount", filters.maxAmount);
+  const selectedExpense = expenses[0] || null;
+  const topCategory = categoryRows[0] || null;
+  const navSections = [
+    {
+      title: "MAIN",
+      items: [{ label: "Dashboard", href: "/dashboard", icon: "house", active: true }],
+    },
+    {
+      title: "FINANCE",
+      items: [
+        { label: "Expenses", href: "/expenses", icon: "receipt" },
+        { label: "Transactions", href: "/transactions", icon: "money-bill-transfer" },
+        { label: "Budgets", href: "/budgets", icon: "wallet" },
+        { label: "Analytics", href: "/analytics", icon: "chart-line" },
+        { label: "Goals", href: "/goals", icon: "bullseye" },
+      ],
+    },
+    {
+      title: "TEAM",
+      items: [
+        { label: "People", href: "/people", icon: "users" },
+        { label: "Groups", href: "/groups", icon: "layer-group" },
+        { label: "Chat", href: "/chat", icon: "comments" },
+      ],
+    },
+    {
+      title: "SMART",
+      items: [
+        { label: "Insights (AI)", href: "/insights", icon: "sparkles" },
+        { label: "Recommendations", href: "/recommendations", icon: "lightbulb" },
+        { label: "Forecast", href: "/forecast", icon: "arrow-trend-up" },
+      ],
+    },
+    {
+      title: "TOOLS",
+      items: [
+        { label: "Calendar", href: "/calendar", icon: "calendar-days" },
+        { label: "Reports / Export", href: "/reports", icon: "share-nodes" },
+      ],
+    },
+    {
+      title: "SYSTEM",
+      items: [
+        { label: "Notifications", href: "/notifications", icon: "bell" },
+        { label: "Profile", href: "/profile", icon: "user" },
+        { label: "Settings", href: "/settings", icon: "gear" },
+        { label: "Theme Toggle", href: "/theme", icon: "moon" },
+        { label: "Help", href: "/help", icon: "circle-question" },
+        { label: "Logout", href: "/logout", icon: "right-from-bracket" },
+      ],
+    },
+  ];
 %>
-<%- include("partials/header", { title, currentUser, flashes, extraCss: `
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-  
-  * {
-    font-family: 'Inter', sans-serif;
-  }
-  
-  .glass-morphism {
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
-  
-  .gradient-text {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .floating-animation {
-    animation: float 6s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-  }
-  
-  .shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    background-size: 200% 100%;
-    animation: shimmer 2s linear infinite;
-  }
-  
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-  
-  .card-hover-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card-hover-lift:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  }
-  
-  .pulse-dot {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-</style>
-` }) %>
+<%- include("partials/header", { title, currentUser, flashes, extraCss: null, bodyClass: "dashboard-crm-page" }) %>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-  <!-- Background Pattern -->
-  <div class="fixed inset-0 opacity-30">
-    <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2394a3b" opacity=".4"%3E%3Cpath d="M36 34v-4h-2v4h2v4h-2v-4zm-16 0v-4h-2v4h2v4h-2v-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E'); background-size: 60px 60px;"></div>
-  </div>
-  
-  <div class="relative z-10">
-    <!-- Main Container -->
-    <div class="p-6 max-w-7xl mx-auto">
-    <!-- Navbar -->
-    <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <h1 class="text-2xl font-bold text-indigo-600">🚀 Spendly</h1>
-            </div>
-            <div class="hidden md:block ml-10">
-              <div class="flex items-baseline space-x-4">
-                <a href="/dashboard" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                <a href="/expenses" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Expenses</a>
-                <a href="/analytics" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Analytics</a>
-                <a href="/recurring" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Recurring</a>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center space-x-4">
-            <button class="text-gray-500 hover:text-gray-700">
-              <i class="fas fa-bell"></i>
-            </button>
-            <div class="relative">
-              <button class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <span class="sr-only">Open user menu</span>
-                <div class="h-8 w-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                  <%= currentUser.name.charAt(0).toUpperCase() %>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
+<section class="crm-shell">
+  <aside class="crm-sidebar">
+    <div class="crm-sidebar-head">
+      <div class="crm-user-avatar"><%= currentUser.name.charAt(0).toUpperCase() %></div>
+      <div class="crm-user-copy">
+        <strong><%= currentUser.name %></strong>
+        <span>Spendly workspace</span>
       </div>
+      <a href="/settings" class="crm-close-link" aria-label="Open settings">×</a>
+    </div>
+
+    <div class="crm-sidebar-tools">
+      <button type="button" class="crm-sidebar-add" data-modal-open="add-expense-modal">+ Add Expense</button>
+      <form method="GET" action="/dashboard" class="crm-sidebar-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="q" value="<%= filters.q %>" placeholder="Search">
+      </form>
+    </div>
+
+    <nav class="crm-nav">
+      <% navSections.forEach((section) => { %>
+        <div class="crm-nav-section">
+          <div class="crm-nav-heading"><%= section.title %></div>
+          <% section.items.forEach((item) => { %>
+            <a href="<%= item.href %>" class="crm-nav-link <%= item.active ? 'is-active' : '' %>">
+              <i class="fa-solid fa-<%= item.icon %>"></i>
+              <span><%= item.label %></span>
+            </a>
+          <% }) %>
+        </div>
+      <% }) %>
     </nav>
 
-    <!-- Main Content Area -->
-    <div class="flex">
-      <!-- Sidebar -->
-      <aside class="w-64 bg-white shadow-lg h-screen sticky top-16">
-        <div class="p-6">
-          <div class="space-y-6">
-            <div>
-              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Actions</h3>
-              <div class="mt-3 space-y-1">
-                <a href="/expenses/add" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-indigo-50 hover:text-indigo-600">
-                  <i class="fas fa-plus mr-3"></i>
-                  Add Expense
-                </a>
-                <a href="/team/invite" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-indigo-50 hover:text-indigo-600">
-                  <i class="fas fa-user-plus mr-3"></i>
-                  Invite Member
-                </a>
-                <a href="/analytics" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-indigo-50 hover:text-indigo-600">
-                  <i class="fas fa-chart-line mr-3"></i>
-                  View Analytics
-                </a>
-              </div>
-            </div>
-            
-            <div>
-              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget Status</h3>
-              <div class="mt-3">
-                <div class="bg-gray-200 rounded-full h-2">
-                  <div class="bg-indigo-600 h-2 rounded-full" style="width: 69%"></div>
-                </div>
-                <p class="mt-2 text-sm text-gray-600">₹34,500 of ₹50,000 used</p>
-              </div>
-            </div>
+    <div class="crm-sidebar-foot">
+      <div class="crm-brand-lockup">
+        <span class="crm-brand-icon">◈</span>
+        <strong>SPENDLY</strong>
+      </div>
+      <a href="/logout" class="crm-foot-link">Logout</a>
+    </div>
+  </aside>
 
-            <div>
-              <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">AI Insights</h3>
-              <div class="mt-3 space-y-2">
-                <div class="p-3 bg-yellow-50 rounded-lg">
-                  <p class="text-sm text-yellow-800">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    You overspent on food by 15%
-                  </p>
-                </div>
-                <div class="p-3 bg-blue-50 rounded-lg">
-                  <p class="text-sm text-blue-800">
-                    <i class="fas fa-chart-line mr-2"></i>
-                    Travel expenses increased 25%
-                  </p>
-                </div>
-              </div>
+  <div class="crm-main">
+    <header class="crm-topbar">
+      <div class="crm-topbar-title">Sales</div>
+
+      <form method="GET" action="/dashboard" class="crm-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" name="q" value="<%= filters.q %>" placeholder="Search">
+      </form>
+
+      <div class="crm-topbar-actions">
+        <div class="crm-trial-pill">Health score <strong><%= healthScore %>/100</strong></div>
+        <button type="button" class="crm-purchase-btn" data-modal-open="add-expense-modal">ADD EXPENSE</button>
+        <a href="/expenses/export" class="crm-icon-btn" aria-label="Export data"><i class="fa-solid fa-plus"></i></a>
+        <button type="button" class="crm-icon-btn" aria-label="Alerts"><i class="fa-solid fa-bell"></i></button>
+      </div>
+    </header>
+
+    <div class="crm-content">
+      <section class="crm-column crm-column--details">
+        <article class="crm-card crm-card--header">
+          <div class="crm-record-chip">
+            <div class="crm-record-icon"><i class="fa-solid fa-wallet"></i></div>
+            <div class="crm-record-copy">
+              <h1><%= selectedExpense ? selectedExpense.title : "No recent expenses" %></h1>
+              <p><%= selectedExpense ? `${selectedExpense.category} / ₹${Number(selectedExpense.amount).toFixed(2)}` : "Start by adding your first transaction." %></p>
             </div>
           </div>
+          <div class="crm-record-actions">
+            <button type="button" class="crm-star-btn" aria-label="Favorite"><i class="fa-solid fa-star"></i></button>
+            <a href="/expenses" class="crm-more-btn" aria-label="Open expenses"><i class="fa-solid fa-ellipsis-vertical"></i></a>
+          </div>
+        </article>
+
+        <article class="crm-card crm-card--form">
+          <div class="crm-field-list">
+            <div class="crm-field">
+              <span class="crm-field-label">Name</span>
+              <strong><%= selectedExpense ? selectedExpense.title : "No expense selected" %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Pipeline</span>
+              <strong>Sales</strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Primary category</span>
+              <strong><%= selectedExpense ? selectedExpense.category : "Choose a category" %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Close date</span>
+              <strong><%= selectedExpense ? selectedExpense.expense_date : todayKey %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Company</span>
+              <strong><%= topCategory ? `${topCategory.category} budget` : "Expense book" %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Status</span>
+              <strong><%= budgetAlert ? budgetAlert.label : "Open" %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Owner</span>
+              <strong><%= currentUser.name %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Stage</span>
+              <strong><%= velocity.projectedTotal > monthlyBudget && monthlyBudget ? "Follow-up" : "On track" %></strong>
+            </div>
+            <div class="crm-field">
+              <span class="crm-field-label">Source</span>
+              <strong><%= hasActiveFilters ? "Filtered view" : "Main dashboard" %></strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="crm-column crm-column--activity">
+        <div class="crm-sync-row">
+          <span>Synced 4 minutes ago</span>
+          <i class="fa-solid fa-rotate-right"></i>
         </div>
+
+        <section class="crm-metric-strip">
+          <article class="crm-metric-box">
+            <strong><%= summary.total_count || 0 %></strong>
+            <span>Interactions</span>
+          </article>
+          <article class="crm-metric-box">
+            <strong><%= selectedExpense ? selectedExpense.expense_date : "--" %></strong>
+            <span>Last Contacted</span>
+          </article>
+          <article class="crm-metric-box">
+            <strong><%= todayStats.hasLoggedToday ? 0 : 1 %></strong>
+            <span>Inactive Days</span>
+          </article>
+          <article class="crm-metric-box">
+            <strong><%= healthScore %></strong>
+            <span>Days in Stage</span>
+          </article>
+        </section>
+
+        <article class="crm-card crm-composer">
+          <div class="crm-tabs">
+            <button type="button" class="is-active">LOG ACTIVITY</button>
+            <button type="button">CREATE NOTE</button>
+          </div>
+          <div class="crm-composer-body">
+            <div class="crm-composer-row">
+              <span>To Do</span>
+              <i class="fa-solid fa-caret-down"></i>
+            </div>
+            <form method="GET" action="/dashboard">
+              <input type="text" name="q" value="<%= filters.q %>" placeholder="Click here to add a note">
+            </form>
+          </div>
+        </article>
+
+        <article class="crm-card crm-timeline-card">
+          <div class="crm-section-head">
+            <span>Today</span>
+            <span>Showing: <strong>All Activity</strong></span>
+          </div>
+
+          <% if (expenses.length) { %>
+            <div class="crm-timeline">
+              <% expenses.slice(0, 6).forEach((expense) => { %>
+                <div class="crm-timeline-item">
+                  <div class="crm-timeline-icon"><i class="fa-solid fa-wallet"></i></div>
+                  <div class="crm-timeline-copy">
+                    <p>You added <strong><%= expense.title %></strong> in <a href="/expenses"><%= expense.category %></a></p>
+                    <small><%= expense.notes || `Logged for ₹${Number(expense.amount).toFixed(2)}` %></small>
+                  </div>
+                  <time><%= expense.expense_date %></time>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="empty-state empty-state--compact">
+              <h3>No activity yet</h3>
+              <p>Add an expense and the dashboard timeline will start filling in.</p>
+            </div>
+          <% } %>
+        </article>
+      </section>
+
+      <aside class="crm-column crm-column--rail">
+        <article class="crm-side-panel">
+          <div class="crm-side-head">
+            <span>People (<%= Math.min(expenses.length, 2) %>)</span>
+            <a href="/profile">+</a>
+          </div>
+
+          <% if (expenses.length) { %>
+            <% expenses.slice(0, 2).forEach((expense) => { %>
+              <div class="crm-person-row">
+                <div class="crm-person-avatar"><%= expense.category.charAt(0) %></div>
+                <div>
+                  <strong><%= expense.title %></strong>
+                  <p><%= expense.category %> at <a href="/expenses">Spendly Workspace</a></p>
+                  <span>₹<%= Number(expense.amount).toFixed(2) %> | <%= expense.expense_date %></span>
+                </div>
+              </div>
+            <% }) %>
+            <a href="/expenses" class="crm-list-link">VIEW IN LIST</a>
+          <% } else { %>
+            <p class="empty-copy">No people-style records yet.</p>
+          <% } %>
+        </article>
+
+        <article class="crm-side-stack">
+          <div class="crm-stack-row">
+            <span>Companies (<%= categoryRows.length %>)</span>
+            <a href="/groups">+</a>
+          </div>
+          <div class="crm-stack-body">
+            <% if (categoryRows.length) { %>
+              <% categoryRows.slice(0, 4).forEach((row) => { %>
+                <div class="crm-mini-row">
+                  <span><%= row.category %></span>
+                  <strong>₹<%= row.total.toFixed(0) %></strong>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <span>No categories yet</span>
+            <% } %>
+          </div>
+        </article>
+
+        <article class="crm-side-stack">
+          <div class="crm-stack-row">
+            <span>Tasks (<%= advisorMessages.length %>)</span>
+            <a href="/insights">+</a>
+          </div>
+          <div class="crm-stack-body">
+            <% if (advisorMessages.length) { %>
+              <% advisorMessages.slice(0, 3).forEach((message) => { %>
+                <div class="crm-mini-copy"><%= message %></div>
+              <% }) %>
+            <% } else { %>
+              <span>No active tasks</span>
+            <% } %>
+          </div>
+        </article>
+
+        <article class="crm-side-stack">
+          <div class="crm-stack-row">
+            <span>Files (<%= riskAlerts.length %>)</span>
+            <a href="/notifications">+</a>
+          </div>
+          <div class="crm-stack-body">
+            <% if (riskAlerts.length) { %>
+              <% riskAlerts.slice(0, 3).forEach((alert) => { %>
+                <div class="crm-mini-copy"><%= alert %></div>
+              <% }) %>
+            <% } else { %>
+              <span>No risk alerts</span>
+            <% } %>
+          </div>
+        </article>
+
+        <article class="crm-side-stack">
+          <div class="crm-stack-row">
+            <span>Calendar Events (<%= weeklySummary.rows.length %>)</span>
+            <a href="/analytics">+</a>
+          </div>
+          <div class="crm-stack-body">
+            <% weeklySummary.rows.slice(-3).forEach((row) => { %>
+              <div class="crm-mini-row">
+                <span><%= row.label %></span>
+                <strong>₹<%= row.total.toFixed(0) %></strong>
+              </div>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="crm-side-stack">
+          <div class="crm-stack-row">
+            <span>Projects (1)</span>
+            <a href="/budgets">+</a>
+          </div>
+          <div class="crm-stack-body">
+            <div class="crm-mini-copy">Budget left: <strong><%= monthlyBudget ? `₹${remainingBudget.toFixed(0)}` : "Set budget" %></strong></div>
+            <div class="crm-mini-copy">Projection: <strong>₹<%= velocity.projectedTotal.toFixed(0) %></strong></div>
+          </div>
+        </article>
       </aside>
-    <!-- Main Content Area -->
-      <main class="flex-1">
-        <!-- TOP SECTION (WELCOME + SUMMARY) -->
-        <header class="mb-8">
-          <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl p-8 shadow-xl">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="text-3xl font-bold mb-2">Good Afternoon, Piyush 👋</h2>
-                <p class="text-lg opacity-90">Manage your team's expenses and collaborate efficiently</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm opacity-75">Last updated: Just now</p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- SUMMARY CARDS -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-            <!-- Team Members Card -->
-            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-green-500 hover:shadow-xl transition-all duration-300">
-              <h3 class="text-gray-500 text-sm mb-2">Team Members</h3>
-              <p class="text-2xl font-bold">12</p>
-            </div>
-            
-            <!-- Today's Spend Card -->
-            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-blue-500 hover:shadow-xl transition-all duration-300">
-              <h3 class="text-gray-500 text-sm mb-2">Today's Spend</h3>
-              <p class="text-2xl font-bold">₹0</p>
-            </div>
-            
-            <!-- Daily Average Card -->
-            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-yellow-500 hover:shadow-xl transition-all duration-300">
-              <h3 class="text-gray-500 text-sm mb-2">Daily Average</h3>
-              <p class="text-2xl font-bold">₹0</p>
-            </div>
-            
-            <!-- Health Score Card -->
-            <div class="bg-white rounded-xl shadow-lg p-4 border-l-4 border-red-500 hover:shadow-xl transition-all duration-300">
-              <h3 class="text-gray-500 text-sm mb-2">Health Score</h3>
-              <p class="text-2xl font-bold">69/100</p>
-            </div>
-          </div>
-        </header>
-
-        <!-- CHART SECTION (ANALYTICS) -->
-        <section class="mb-8">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left: Spending Trends -->
-            <div class="bg-white rounded-xl p-6 shadow-lg">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                  <i class="fas fa-chart-line text-indigo-600 mr-3"></i>
-                  Spending Trends
-                </h3>
-                <div class="flex items-center space-x-2">
-                  <button class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200">This Week</button>
-                  <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Last Week</button>
-                </div>
-              </div>
-              <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-                <canvas id="spendingChart" class="w-full h-full"></canvas>
-              </div>
-              <div class="mt-4 grid grid-cols-2 gap-4">
-                <div class="text-center p-4 bg-blue-50 rounded-lg">
-                  <div class="text-2xl font-bold text-blue-600">₹18,200</div>
-                  <div class="text-sm text-gray-600">This Week</div>
-                </div>
-                <div class="text-center p-4 bg-green-50 rounded-lg">
-                  <div class="text-2xl font-bold text-green-600">+12.5%</div>
-                  <div class="text-sm text-gray-600">vs Last Week</div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Right: Category Breakdown -->
-            <div class="bg-white rounded-xl p-6 shadow-lg">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                  <i class="fas fa-chart-pie text-purple-600 mr-3"></i>
-                  Category Breakdown
-                </h3>
-                <button class="text-indigo-600 hover:text-indigo-700">
-                  <i class="fas fa-ellipsis-h"></i>
-                </button>
-              </div>
-              <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-                <canvas id="categoryChart" class="w-full h-full"></canvas>
-              </div>
-              <div class="mt-4 space-y-2">
-                <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                  <div class="flex items-center">
-                    <div class="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
-                    <span class="text-sm font-medium">Food</span>
-                  </div>
-                  <span class="text-lg font-bold text-gray-800">₹8,500</span>
-                </div>
-                <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div class="flex items-center">
-                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                    <span class="text-sm font-medium">Travel</span>
-                  </div>
-                  <span class="text-lg font-bold text-gray-800">₹5,200</span>
-                </div>
-                <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <div class="flex items-center">
-                    <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
-                    <span class="text-sm font-medium">Software</span>
-                  </div>
-                  <span class="text-lg font-bold text-gray-800">₹3,100</span>
-                </div>
-                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div class="flex items-center">
-                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                    <span class="text-sm font-medium">Supplies</span>
-                  </div>
-                  <span class="text-lg font-bold text-gray-800">₹1,400</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-  <!-- MIDDLE SECTION (GRID VIEW) -->
-        <section class="mb-8">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left: Team Members Card -->
-            <div class="bg-white rounded-xl p-6 shadow-lg">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  <i class="fas fa-users text-purple-600"></i>
-                  Team Members
-                </h3>
-                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-300 text-sm font-medium">
-                  <i class="fas fa-user-plus mr-2"></i>
-                  Invite Member
-                </button>
-              </div>
-              
-              <div class="space-y-4">
-                <!-- Team Member 1 -->
-                <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold mr-4">JD</div>
-                  <div class="flex-1">
-                    <div class="font-semibold mb-1">John Doe</div>
-                    <div class="text-gray-600 text-sm">Team Lead</div>
-                  </div>
-                  <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Active</span>
-                </div>
-                
-                <!-- Team Member 2 -->
-                <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold mr-4">AS</div>
-                  <div class="flex-1">
-                    <div class="font-semibold mb-1">Alice Smith</div>
-                    <div class="text-gray-600 text-sm">Developer</div>
-                  </div>
-                  <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Active</span>
-                </div>
-                
-                <!-- Team Member 3 -->
-                <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center text-white font-bold mr-4">BJ</div>
-                  <div class="flex-1">
-                    <div class="font-semibold mb-1">Bob Johnson</div>
-                    <div class="text-gray-600 text-sm">Designer</div>
-                  </div>
-                  <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Away</span>
-                </div>
-                
-                <!-- Team Member 4 -->
-                <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-r from-gray-600 to-gray-400 flex items-center justify-center text-white font-bold mr-4">EW</div>
-                  <div class="flex-1">
-                    <div class="font-semibold mb-1">Emma Wilson</div>
-                    <div class="text-gray-600 text-sm">Marketing</div>
-                  </div>
-                  <span class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">Offline</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Right: Recent Activities -->
-            <div class="bg-white rounded-xl p-6 shadow-lg">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  <i class="fas fa-stream text-purple-600"></i>
-                  Recent Activities
-                </h3>
-                <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                  <option value="all">All Activities</option>
-                  <option value="expenses">Expenses</option>
-                  <option value="members">Members</option>
-                  <option value="budget">Budget</option>
-                </select>
-              </div>
-              
-              <div class="space-y-3">
-                <!-- Activity 1 -->
-                <div class="flex items-start p-3 border-l-4 border-gray-200 hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-4">
-                    <i class="fas fa-money-bill-wave text-green-600"></i>
-                  </div>
-                  <div class="flex-1">
-                    <div class="font-medium mb-1">New expense added: Team Lunch</div>
-                    <div class="text-gray-600 text-xs">2 hours ago by John Doe</div>
-                  </div>
-                </div>
-                
-                <!-- Activity 2 -->
-                <div class="flex items-start p-3 border-l-4 border-gray-200 hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                    <i class="fas fa-chart-line text-blue-600"></i>
-                  </div>
-                  <div class="flex-1">
-                    <div class="font-medium mb-1">Budget updated: Marketing team</div>
-                    <div class="text-gray-600 text-xs">5 hours ago by Alice Smith</div>
-                  </div>
-                </div>
-                
-                <!-- Activity 3 -->
-                <div class="flex items-start p-3 border-l-4 border-gray-200 hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-4">
-                    <i class="fas fa-sync text-purple-600"></i>
-                  </div>
-                  <div class="flex-1">
-                    <div class="font-medium mb-1">Recurring expense generated: Office Rent</div>
-                    <div class="text-gray-600 text-xs">1 day ago by System</div>
-                  </div>
-                </div>
-                
-                <!-- Activity 4 -->
-                <div class="flex items-start p-3 border-l-4 border-gray-200 hover:border-indigo-500 hover:bg-gray-50 transition-all duration-200">
-                  <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
-                    <i class="fas fa-user-plus text-indigo-600"></i>
-                  </div>
-                  <div class="flex-1">
-                    <div class="font-medium mb-1">New team member joined: Carol Davis</div>
-                    <div class="text-gray-600 text-xs">2 days ago by Admin</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="absolute top-4 right-4">
-              <div class="w-3 h-3 bg-green-500 rounded-full pulse-dot"></div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-xl shadow-xl">
-                  JD
-                </div>
-                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                  <i class="fas fa-check text-white text-xs"></i>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">John Doe</h4>
-                  <span class="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-medium rounded-full">Team Lead</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-3">Leading the team with strategic vision and exceptional execution</p>
-                <div class="flex items-center gap-4 text-sm text-gray-500">
-                  <i class="fas fa-envelope"></i>
-                  <i class="fas fa-phone"></i>
-                  <i class="fas fa-map-marker-alt"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="absolute top-4 right-4">
-              <div class="w-3 h-3 bg-green-500 rounded-full pulse-dot"></div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xl shadow-xl">
-                  AS
-                </div>
-                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                  <i class="fas fa-check text-white text-xs"></i>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">Alice Smith</h4>
-                  <span class="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-medium rounded-full">Developer</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-3">Full-stack developer with expertise in modern web technologies and cloud architecture</p>
-                <div class="flex items-center gap-4 text-sm text-gray-500">
-                  <i class="fab fa-github"></i>
-                  <i class="fab fa-linkedin"></i>
-                  <i class="fas fa-globe"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="absolute top-4 right-4">
-              <div class="w-3 h-3 bg-yellow-500 rounded-full pulse-dot"></div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xl shadow-xl">
-                  BJ
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">Bob Johnson</h4>
-                  <span class="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-medium rounded-full">Designer</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-3">Creative designer specializing in UI/UX with a passion for beautiful and functional design</p>
-                <div class="flex items-center gap-4 text-sm text-gray-500">
-                  <i class="fab fa-dribbble"></i>
-                  <i class="fab fa-behance"></i>
-                  <i class="fas fa-palette"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="group relative opacity-75">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="absolute top-4 right-4">
-              <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-600 to-gray-400 flex items-center justify-center text-white font-bold text-xl shadow-xl opacity-75">
-                  EW
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">Emma Wilson</h4>
-                  <span class="px-3 py-1 bg-gray-600 text-white text-xs font-medium rounded-full">Marketing</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-3">Marketing specialist focused on brand growth and digital marketing strategies</p>
-                <div class="flex items-center gap-4 text-sm text-gray-400">
-                  <i class="fas fa-envelope"></i>
-                  <i class="fas fa-phone"></i>
-                  <i class="fas fa-map-marker-alt"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Activities Card -->
-    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
-          <i class="fas fa-stream text-purple-600 text-2xl"></i>
-          <span class="gradient-text bg-clip-text text-transparent">Recent Activities</span>
-        </h3>
-        <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
-          <i class="fas fa-filter mr-2"></i>
-          Filter
-        </button>
-      </div>
-      
-      <div class="space-y-4">
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-lg">
-                  <i class="fas fa-plus text-xl"></i>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">New Expense Added</h4>
-                  <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">+₹1,200</span>
-                </div>
-                <p class="text-gray-700 mb-2">Team Lunch at Downtown Restaurant</p>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <i class="fas fa-user"></i>
-                    <span>John Doe</span>
-                    <span class="mx-2">•</span>
-                    <i class="fas fa-clock"></i>
-                    <span>2 hours ago</span>
-                  </div>
-                  <div class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300 cursor-pointer">
-                    View Details
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-lg">
-                  <i class="fas fa-chart-line text-xl"></i>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">Budget Updated</h4>
-                  <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Marketing</span>
-                </div>
-                <p class="text-gray-700 mb-2">Monthly budget increased by 15% for Q4 marketing campaigns</p>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <i class="fas fa-user"></i>
-                    <span>Alice Smith</span>
-                    <span class="mx-2">•</span>
-                    <i class="fas fa-clock"></i>
-                    <span>5 hours ago</span>
-                  </div>
-                  <div class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-all duration-300 cursor-pointer">
-                    View Details
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg">
-                  <i class="fas fa-sync text-xl"></i>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">Recurring Generated</h4>
-                  <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Office Rent</span>
-                </div>
-                <p class="text-gray-700 mb-2">Monthly office rent automatically generated and categorized</p>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <i class="fas fa-robot"></i>
-                    <span>System</span>
-                    <span class="mx-2">•</span>
-                    <i class="fas fa-clock"></i>
-                    <span>1 day ago</span>
-                  </div>
-                  <div class="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full hover:bg-orange-200 transition-all duration-300 cursor-pointer">
-                    View Details
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="group relative">
-          <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-            <div class="flex items-start gap-4">
-              <div class="relative">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
-                  <i class="fas fa-user-plus text-xl"></i>
-                </div>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-lg font-bold text-gray-800">New Team Member</h4>
-                  <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">Carol Davis</span>
-                </div>
-                <p class="text-gray-700 mb-2">Senior developer joined the team with expertise in backend systems</p>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Admin</span>
-                    <span class="mx-2">•</span>
-                    <i class="fas fa-clock"></i>
-                    <span>2 days ago</span>
-                  </div>
-                  <div class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 transition-all duration-300 cursor-pointer">
-                    Welcome
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
-
-  <!-- Bottom Grid -->
-  <div class="grid lg:grid-cols-2 gap-8">
-    <!-- Team Spending Chart -->
-    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
-          <i class="fas fa-chart-area text-purple-600 text-2xl"></i>
-          <span class="gradient-text bg-clip-text text-transparent">Team Spending Trends</span>
-        </h3>
-        <div class="flex items-center gap-2">
-          <button class="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
-            <i class="fas fa-calendar-alt mr-2"></i>
-            This Week
-          </button>
-          <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm font-medium">
-            <i class="fas fa-download mr-2"></i>
-            Export
-          </button>
-        </div>
-      </div>
-      
-      <div class="relative">
-        <div class="absolute top-4 right-4 z-10">
-          <div class="flex flex-col gap-2">
-            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-          </div>
-        </div>
-        <div class="h-96 bg-gradient-to-br from-white/50 to-blue-50/30 rounded-2xl p-4 border border-white/20">
-          <canvas id="teamSpendingChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-4 mt-6">
-        <div class="text-center p-4 bg-blue-50 rounded-xl">
-          <div class="text-2xl font-bold text-blue-600 mb-1">₹18,200</div>
-          <div class="text-sm text-gray-600">This Week</div>
-        </div>
-        <div class="text-center p-4 bg-green-50 rounded-xl">
-          <div class="text-2xl font-bold text-green-600 mb-1">+12.5%</div>
-          <div class="text-sm text-gray-600">vs Last Week</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30 mb-8">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
-          <i class="fas fa-bolt text-purple-600 text-2xl"></i>
-          <span class="gradient-text bg-clip-text text-transparent">Quick Actions</span>
-        </h3>
-        <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
-          <i class="fas fa-cog mr-2"></i>
-          Customize
-        </button>
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div onclick="window.location.href='/expenses/add'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-purple-500">
-          <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="relative z-10 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <i class="fas fa-plus text-2xl"></i>
-            </div>
-            <div class="text-xl font-bold mb-2 text-gray-800">Add Expense</div>
-            <div class="text-gray-600 text-sm leading-relaxed">Quickly log a new team expense</div>
-          </div>
-        </div>
-        
-        <div onclick="window.location.href='/recurring/add'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-blue-500">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="relative z-10 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <i class="fas fa-sync text-2xl"></i>
-            </div>
-            <div class="text-xl font-bold mb-2 text-gray-800">Setup Recurring</div>
-            <div class="text-gray-600 text-sm leading-relaxed">Create automatic recurring expenses</div>
-          </div>
-        </div>
-        
-        <div onclick="window.location.href='/analytics'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-orange-500">
-          <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="relative z-10 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <i class="fas fa-chart-pie text-2xl"></i>
-            </div>
-            <div class="text-xl font-bold mb-2 text-gray-800">View Analytics</div>
-            <div class="text-gray-600 text-sm leading-relaxed">Deep dive into spending patterns</div>
-          </div>
-        </div>
-        
-        <div onclick="window.location.href='/team/invite'" class="group relative overflow-hidden card-hover-lift glass-morphism rounded-2xl p-8 border-white/30 transition-all duration-300 cursor-pointer hover:border-indigo-500">
-          <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="relative z-10 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300">
-              <i class="fas fa-user-plus text-2xl"></i>
-            </div>
-            <div class="text-xl font-bold mb-2 text-gray-800">Invite Member</div>
-            <div class="text-gray-600 text-sm leading-relaxed">Add new team members</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent Expenses -->
-  <div class="card-hover-lift glass-morphism rounded-3xl p-8 border-white/30">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
-        <i class="fas fa-receipt text-purple-600 text-2xl"></i>
-        <span class="gradient-text bg-clip-text text-transparent">Recent Team Expenses</span>
-      </h3>
-      <button class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all duration-300 text-sm font-medium">
-        <i class="fas fa-filter mr-2"></i>
-        Filter by Category
-      </button>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="group relative">
-        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-          <div class="flex items-start gap-4">
-            <div class="relative">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white shadow-xl">
-                <i class="fas fa-utensils text-2xl"></i>
-              </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                New
-              </div>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="text-lg font-bold text-gray-800">Team Lunch</h4>
-                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹1,200</span>
-              </div>
-              <p class="text-gray-700 mb-3">Team lunch at Downtown Restaurant for project celebration</p>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3 text-sm text-gray-600">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-xs">
-                    JD
-                  </div>
-                  <span>John Doe</span>
-                  <span class="mx-2">•</span>
-                  <i class="fas fa-clock"></i>
-                  <span>Today, 1:30 PM</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Food</span>
-                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
-                    <i class="fas fa-eye mr-1"></i>
-                    View
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="group relative">
-        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-          <div class="flex items-start gap-4">
-            <div class="relative">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-xl">
-                <i class="fas fa-laptop-code text-2xl"></i>
-              </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                New
-              </div>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="text-lg font-bold text-gray-800">Software License</h4>
-                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹5,000</span>
-              </div>
-              <p class="text-gray-700 mb-3">Annual subscription for development tools and software suite</p>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3 text-sm text-gray-600">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xs">
-                    AS
-                  </div>
-                  <span>Alice Smith</span>
-                  <span class="mx-2">•</span>
-                  <i class="fas fa-clock"></i>
-                  <span>Today, 10:15 AM</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Software</span>
-                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
-                    <i class="fas fa-eye mr-1"></i>
-                    View
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="group relative">
-        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-          <div class="flex items-start gap-4">
-            <div class="relative">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-xl">
-                <i class="fas fa-car text-2xl"></i>
-              </div>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="text-lg font-bold text-gray-800">Travel Expenses</h4>
-                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹3,500</span>
-              </div>
-              <p class="text-gray-700 mb-3">Business trip to client meeting including accommodation and transport</p>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3 text-sm text-gray-600">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xs">
-                    BJ
-                  </div>
-                  <span>Bob Johnson</span>
-                  <span class="mx-2">•</span>
-                  <i class="fas fa-clock"></i>
-                  <span>Yesterday</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Travel</span>
-                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
-                    <i class="fas fa-eye mr-1"></i>
-                    View
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="group relative">
-        <div class="card-hover-lift glass-morphism rounded-2xl p-6 border-white/30 transition-all duration-300">
-          <div class="flex items-start gap-4">
-            <div class="relative">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl">
-                <i class="fas fa-coffee text-2xl"></i>
-              </div>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="text-lg font-bold text-gray-800">Office Supplies</h4>
-                <span class="px-3 py-1 bg-red-100 text-red-800 text-lg font-bold">₹800</span>
-              </div>
-              <p class="text-gray-700 mb-3">Stationery, printer ink, and other office essentials</p>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3 text-sm text-gray-600">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-600 to-gray-400 flex items-center justify-center text-white font-bold text-xs">
-                    EW
-                  </div>
-                  <span>Emma Wilson</span>
-                  <span class="mx-2">•</span>
-                  <i class="fas fa-clock"></i>
-                  <span>2 days ago</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Supplies</span>
-                  <button class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-all duration-300">
-                    <i class="fas fa-eye mr-1"></i>
-                    View
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="mt-8 text-center">
-      <button class="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-xl hover:from-purple-700 hover:to-purple-900 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
-        <i class="fas fa-plus-circle mr-2"></i>
-        View All Expenses
-      </button>
-    </div>
-  </div>
-<!-- QUICK ACTIONS PANEL -->
-        <section class="mt-6">
-          <div class="card-modern">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-bolt text-indigo-600"></i>
-                Quick Actions
-              </h2>
-            </div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <!-- Add Expense Card -->
-              <div class="button-modern ripple-button">
-                <div class="text-3xl mb-4">➕</div>
-                <div class="text-lg font-bold">Add Expense</div>
-                <div class="text-gray-600 text-sm">Quickly log a new team expense</div>
-              </div>
-              
-              <!-- Setup Recurring Card -->
-              <div class="button-modern ripple-button">
-                <div class="text-3xl mb-4">🔄</div>
-                <div class="text-lg font-bold">Setup Recurring</div>
-                <div class="text-gray-600 text-sm">Create automatic recurring expenses</div>
-              </div>
-              
-              <!-- View Analytics Card -->
-              <div class="button-modern ripple-button">
-                <div class="text-3xl mb-4">📊</div>
-                <div class="text-lg font-bold">View Analytics</div>
-                <div class="text-gray-600 text-sm">Deep dive into spending patterns</div>
-              </div>
-              
-              <!-- Invite Member Card -->
-              <div class="button-modern ripple-button">
-                <div class="text-3xl mb-4">👤</div>
-                <div class="text-lg font-bold">Invite Member</div>
-                <div class="text-gray-600 text-sm">Add new team members</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- RECENT EXPENSES TABLE -->
-        <section class="mt-6">
-          <div class="bg-white rounded-xl shadow-lg p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-receipt text-indigo-600"></i>
-                Recent Expenses
-              </h2>
-              <div class="flex items-center gap-2">
-                <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                  <option value="all">All Categories</option>
-                  <option value="food">Food</option>
-                  <option value="travel">Travel</option>
-                  <option value="software">Software</option>
-                  <option value="supplies">Supplies</option>
-                </select>
-                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-300 text-sm font-medium">
-                  View All
-                </button>
-              </div>
-            </div>
-            
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <!-- Expense 1 -->
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center mr-3">
-                          <i class="fas fa-utensils text-orange-600 text-sm"></i>
-                        </div>
-                        <div>
-                          <div class="text-sm font-medium text-gray-900">Team Lunch</div>
-                          <div class="text-gray-500 text-xs">Team lunch at Downtown Restaurant</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">₹1,200</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">Food</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs mr-2">JD</div>
-                        <div class="text-sm text-gray-900">John Doe</div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Today, 1:30 PM</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">View</button>
-                    </td>
-                  </tr>
-                  
-                  <!-- Expense 2 -->
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                          <i class="fas fa-laptop-code text-blue-600 text-sm"></i>
-                        </div>
-                        <div>
-                          <div class="text-sm font-medium text-gray-900">Software License</div>
-                          <div class="text-gray-500 text-xs">Annual subscription for development tools</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm font-medium text-gray-900">₹5,000</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Software</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold text-xs mr-2">AS</div>
-                        <div class="text-sm text-gray-900">Alice Smith</div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Today, 10:15 AM</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">View</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  // Spending Trends Chart
-  const spendingCtx = document.getElementById('spendingChart').getContext('2d');
-  new Chart(spendingCtx, {
-    type: 'line',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [{
-        label: 'This Week',
-        data: [2200, 2800, 1500, 3200, 2100, 1800, 2500],
-        borderColor: 'rgb(99, 102, 241)',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-        tension: 0.4
-      }, {
-        label: 'Last Week',
-        data: [1800, 2200, 1200, 2800, 1900, 1600, 2000],
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        tension: 0.4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return '₹' + value;
-            }
-          }
-        }
-      }
-    }
-  });
-
-  // Category Breakdown Chart
-  const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-  new Chart(categoryCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Food', 'Travel', 'Software', 'Supplies'],
-      datasets: [{
-        data: [8500, 5200, 3100, 1400],
-        backgroundColor: [
-          'rgb(251, 146, 60)',
-          'rgb(59, 130, 246)',
-          'rgb(147, 51, 234)',
-          'rgb(34, 197, 94)'
-        ],
-        borderWidth: 2,
-        borderColor: '#ffffff'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'right',
-        }
-      }
-    }
-  });
-</script>
-</body>
-</html>
+</section>
 
 <%- include("partials/footer") %>

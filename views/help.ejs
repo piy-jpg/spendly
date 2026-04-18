@@ -1,0 +1,32 @@
+<%- include("partials/crm-shell-start", { title, currentUser, flashes, crmActiveNav: "help", crmTitle: "Help / Support", crmSearchAction: "/dashboard", crmShowAddButton: false }) %>
+
+<section class="dashboard-page">
+  <div class="dashboard-shell dashboard-stack">
+    <div class="dashboard-header">
+      <div>
+        <p class="dashboard-eyebrow">System</p>
+        <h1 class="dashboard-title">Help / Support</h1>
+        <p class="dashboard-subtitle">Find answers for navigation, finance workflows, exports, and day-to-day use of the app.</p>
+      </div>
+      <a href="/dashboard" class="btn-ghost">Back to dashboard</a>
+    </div>
+
+    <section class="dashboard-card">
+      <div class="card-head">
+        <h2>Common questions</h2>
+        <span class="card-note">Support knowledge base</span>
+      </div>
+      <div class="insight-list">
+        <% faqItems.forEach((item) => { %>
+          <div class="insight-item insight-item--smart">
+            <span class="insight-label">FAQ</span>
+            <strong><%= item.question %></strong>
+            <p><%= item.answer %></p>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include("partials/crm-shell-end") %>
