@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "spendly",
   "builds": [
     {
       "src": "server.js",
@@ -16,13 +15,11 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {},
   "installCommand": "npm install",
   "buildCommand": "echo 'No build required for Node.js'",
   "outputDirectory": ".",
   "framework": null,
   "regions": ["iad1"],
-  "functionsDirectory": "api",
   "publicDirectory": "public",
   "rewrites": [
     {
